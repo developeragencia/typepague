@@ -1,108 +1,123 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema } from "@shared/schema";
-import { z } from "zod";
+import { setupAuth } from "./auth";
+import { db } from "./db";
+import { plans } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // User routes
-  app.post("/api/auth/register", async (req, res) => {
-    try {
-      const userData = insertUserSchema.parse(req.body);
-      const existingUser = await storage.getUserByUsername(userData.username);
-      
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
-      }
-      
-      const user = await storage.createUser(userData);
-      
-      // Don't return the password
-      const { password, ...userWithoutPassword } = user;
-      res.status(201).json(userWithoutPassword);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Server error during registration" });
-    }
-  });
-
-  app.post("/api/auth/login", async (req, res) => {
-    try {
-      const { username, password } = req.body;
-      
-      if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required" });
-      }
-      
-      const user = await storage.getUserByUsername(username);
-      
-      if (!user || user.password !== password) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-      
-      // Don't return the password
-      const { password: _, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
-    } catch (error) {
-      res.status(500).json({ message: "Server error during login" });
-    }
-  });
+  // Setup authentication with Passport
+  setupAuth(app);
 
   // Plan routes
   app.get("/api/plans", async (req, res) => {
     try {
-      const plans = [
+      // Check if there are any plans in the database
+      const existingPlans = await storage.getAllPlans();
+      
+      if (existingPlans.length > 0) {
+        return res.json(existingPlans);
+      }
+      
+      // If no plans, create some default ones
+      const defaultPlans = [
         {
-          id: 1,
-          name: "Starter",
+          name: "Básico",
           price: 29,
-          billingCycle: "month",
+          billingCycle: "mês",
           features: [
-            "Process up to $10,000/month",
-            "2.9% + 30¢ per transaction",
-            "Accept major credit cards",
-            "Basic fraud protection",
-            "24/7 email support"
+            "Processe até R$10.000/mês",
+            "2,9% + R$0,30 por transação",
+            "Aceite principais cartões de crédito",
+            "Proteção básica contra fraudes",
+            "Suporte por e-mail 24/7"
           ],
           isPopular: false
         },
         {
-          id: 2,
-          name: "Professional",
+          name: "Profissional",
           price: 79,
-          billingCycle: "month",
+          billingCycle: "mês",
           features: [
-            "Process up to $50,000/month",
-            "2.5% + 25¢ per transaction",
-            "All payment methods",
-            "Advanced fraud protection",
-            "24/7 priority support",
-            "Detailed analytics dashboard"
+            "Processe até R$50.000/mês",
+            "2,5% + R$0,25 por transação",
+            "Todos os métodos de pagamento",
+            "Proteção avançada contra fraudes",
+            "Suporte prioritário 24/7",
+            "Painel de análise detalhado"
           ],
           isPopular: true
         },
         {
-          id: 3,
-          name: "Enterprise",
+          name: "Empresarial",
           price: 249,
-          billingCycle: "month",
+          billingCycle: "mês",
           features: [
-            "Unlimited processing",
-            "Custom pricing available",
-            "All payment methods",
-            "Advanced fraud protection plus",
-            "Dedicated account manager",
-            "Custom integrations"
+            "Processamento ilimitado",
+            "Preços personalizados disponíveis",
+            "Todos os métodos de pagamento",
+            "Proteção avançada premium contra fraudes",
+            "Gerente de conta dedicado",
+            "Integrações personalizadas"
           ],
           isPopular: false
         }
       ];
       
-      res.json(plans);
+      // Insert plans into database
+      await db.insert(plans).values(defaultPlans);
+      
+      // Fetch the inserted plans
+      const newPlans = await storage.getAllPlans();
+      res.json(newPlans);
     } catch (error) {
-      res.status(500).json({ message: "Server error fetching plans" });
+      console.error("Erro ao buscar planos:", error);
+      res.status(500).json({ message: "Erro ao buscar planos" });
+    }
+  });
+  
+  // Customer Support routes
+  app.post("/api/support", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Não autorizado" });
+      }
+      
+      const ticket = await storage.createSupportTicket({
+        ...req.body,
+        userId: req.user!.id
+      });
+      
+      res.status(201).json(ticket);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/support", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Não autorizado" });
+      }
+      
+      const tickets = await storage.getSupportTicketsByUser(req.user!.id);
+      res.json(tickets);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // User Subscription routes
+  app.get("/api/subscriptions", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Não autorizado" });
+      }
+      
+      const subscriptions = await storage.getSubscriptionsByUser(req.user!.id);
+      res.json(subscriptions);
+    } catch (error) {
+      next(error);
     }
   });
 
