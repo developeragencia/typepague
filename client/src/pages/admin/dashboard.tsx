@@ -117,26 +117,20 @@ function GradientCard({
 // Componente de linha de tabela com efeito hover
 function TableRow({ children, isHighlighted = false, onClick }) {
   return (
-    <motion.tr 
+    <tr 
       className={cn(
         "border-b hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer relative group",
         isHighlighted && "bg-blue-50/50 dark:bg-blue-900/10"
       )}
-      whileHover={{ 
-        backgroundColor: "rgba(59, 130, 246, 0.05)",
-        transition: { duration: 0.1 } 
-      }}
       onClick={onClick}
     >
-      <motion.div
-        className="absolute inset-y-0 left-0 w-0.5 bg-blue-500 opacity-0 group-hover:opacity-100"
-        initial={{ scaleY: 0 }}
-        animate={{ scaleY: 1 }}
-        exit={{ scaleY: 0 }}
-        transition={{ duration: 0.2 }}
-      />
+      <td className="w-0.5 p-0">
+        <div 
+          className="w-0.5 h-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        />
+      </td>
       {children}
-    </motion.tr>
+    </tr>
   );
 }
 

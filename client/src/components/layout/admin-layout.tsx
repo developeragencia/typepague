@@ -379,12 +379,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </Avatar>
                 <div className="ml-3 flex-1">
                   <p className="text-sm font-medium">{user?.fullName || user?.username}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
                     <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 mr-1 bg-gradient-to-r from-emerald-500 to-green-600 text-white">
                       ADMIN
                     </Badge>
                     Online
-                  </p>
+                  </div>
                 </div>
                 <Button 
                   variant="ghost" 
