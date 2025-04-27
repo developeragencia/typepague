@@ -50,27 +50,20 @@ function GradientCard({
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0 }
       }}
-      whileHover={{ y: -5 }}
+      whileHover={{ y: -5, scale: 1.02 }}
       transition={{ duration: 0.3 }}
     >
-      <div className={`absolute inset-0 ${colorFrom} ${colorTo} bg-gradient-to-br rounded-xl opacity-60 group-hover:opacity-70 transition-opacity duration-300`}></div>
-      <div className="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-[2px] rounded-xl"></div>
-      
-      {/* Partículas decorativas sutis */}
-      <div className="absolute top-0 right-0 h-16 w-16 rounded-full bg-white/20 opacity-30 transition-transform duration-700 ease-in-out group-hover:scale-110"></div>
-      <div className="absolute bottom-0 left-0 h-8 w-8 rounded-full bg-white/20 opacity-20 transition-transform duration-700 ease-in-out group-hover:scale-125"></div>
-      
-      <Card className="border border-white/20 dark:border-gray-800/60 bg-transparent backdrop-blur-sm relative hover:shadow-xl transition-all duration-300 h-full">
-        <CardHeader className="pb-2">
+      <Card className={`border-0 shadow-lg relative hover:shadow-xl transition-all duration-300 h-full bg-gradient-to-br ${colorFrom} ${colorTo}`}>
+        <CardHeader className="pb-2 border-b border-white/10">
           <div className="flex justify-between items-start">
-            <div className="text-2xl text-white drop-shadow-md">
+            <div className="text-2xl text-white">
               {icon}
             </div>
             <div className={cn(
-              "text-xs font-medium flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-md",
-              changeType === "positive" ? "text-emerald-100 bg-emerald-500/30" : 
-              changeType === "negative" ? "text-rose-100 bg-rose-500/30" : 
-              "text-amber-100 bg-amber-500/30"
+              "text-xs font-medium flex items-center gap-1 px-2 py-1 rounded-full",
+              changeType === "positive" ? "text-white bg-white/20" : 
+              changeType === "negative" ? "text-white bg-white/20" : 
+              "text-white bg-white/20"
             )}>
               {changeType === "positive" ? <ArrowUpRight className="h-3 w-3" /> : 
                changeType === "negative" ? <ArrowDownUp className="h-3 w-3" /> : 
@@ -80,12 +73,16 @@ function GradientCard({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold mt-2 text-white drop-shadow-md">{value}</div>
+          <div className="text-3xl font-bold mt-2 text-white">{value}</div>
           <div className="flex flex-col mt-1">
-            <p className="text-base font-medium text-white/90 drop-shadow-sm">{title}</p>
+            <p className="text-base font-medium text-white">{title}</p>
             <p className="text-xs text-white/80 mt-1">{subtitle}</p>
           </div>
         </CardContent>
+        
+        {/* Elementos decorativos sutis */}
+        <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-white/10 blur-xl"></div>
+        <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full bg-white/10 blur-xl"></div>
       </Card>
     </motion.div>
   );
@@ -179,10 +176,7 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       <div className="relative">
-        {/* Fundo gradiente sutis */}
-        <div className="fixed inset-0 bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30 dark:from-blue-950/10 dark:via-gray-900 dark:to-purple-950/10 -z-10"></div>
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/20 dark:bg-blue-900/10 rounded-full blur-3xl -z-10 opacity-60"></div>
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-100/20 dark:bg-purple-900/10 rounded-full blur-3xl -z-10 opacity-60"></div>
+        {/* Sem fundo decorativo para uma aparência mais limpa */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
           <div>
             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Dashboard Admin</h1>
@@ -282,39 +276,46 @@ export default function AdminDashboard() {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-2">
             {[
-              { icon: <BarChart3 />, title: "Estatísticas", desc: "Relatórios e métricas", color: "from-blue-500/70 to-indigo-600/70", path: "/admin/dashboard-padrao" },
-              { icon: <CreditCard />, title: "Produtos", desc: "Gerenciar produtos", color: "from-purple-500/70 to-pink-600/70", path: "/admin/produtos" },
-              { icon: <ShoppingCart />, title: "Checkout", desc: "Links de pagamento", color: "from-emerald-500/70 to-teal-600/70", path: "/admin/checkout-link" },
-              { icon: <PieChart />, title: "Builder", desc: "Personalizar checkout", color: "from-amber-500/70 to-orange-600/70", path: "/admin/checkout-builder" },
-              { icon: <LayoutGrid />, title: "Layout", desc: "Temas e aparência", color: "from-blue-400/70 to-indigo-500/70", path: "/admin/lista-layout" },
-              { icon: <ListIcon />, title: "Transações", desc: "Histórico financeiro", color: "from-rose-500/70 to-red-600/70", path: "/admin/transacoes" },
-              { icon: <Users />, title: "Clientes", desc: "Base de clientes", color: "from-cyan-500/70 to-blue-600/70", path: "/admin/clientes" },
-              { icon: <Settings />, title: "Ajustes", desc: "Configurações", color: "from-slate-500/70 to-gray-600/70", path: "/admin/perfil" },
+              { icon: <BarChart3 />, title: "Estatísticas", desc: "Relatórios e métricas", color: "from-blue-500 to-indigo-600", path: "/admin/dashboard-padrao" },
+              { icon: <CreditCard />, title: "Produtos", desc: "Gerenciar produtos", color: "from-purple-500 to-pink-600", path: "/admin/produtos" },
+              { icon: <ShoppingCart />, title: "Checkout", desc: "Links de pagamento", color: "from-emerald-500 to-teal-600", path: "/admin/checkout-link" },
+              { icon: <PieChart />, title: "Builder", desc: "Personalizar checkout", color: "from-amber-500 to-orange-600", path: "/admin/checkout-builder" },
+              { icon: <LayoutGrid />, title: "Layout", desc: "Temas e aparência", color: "from-blue-400 to-indigo-500", path: "/admin/lista-layout" },
+              { icon: <ListIcon />, title: "Transações", desc: "Histórico financeiro", color: "from-rose-500 to-red-600", path: "/admin/transacoes" },
+              { icon: <Users />, title: "Clientes", desc: "Base de clientes", color: "from-cyan-500 to-blue-600", path: "/admin/clientes" },
+              { icon: <Settings />, title: "Ajustes", desc: "Configurações", color: "from-slate-500 to-gray-600", path: "/admin/perfil" },
             ].map((item, index) => (
               <Link key={index} href={item.path}>
                 <motion.div 
-                  className="relative h-32 rounded-xl overflow-hidden backdrop-blur-sm hover:shadow-xl transition-all duration-300 group cursor-pointer border border-white/20 dark:border-gray-800/60"
+                  className="relative h-32 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1, duration: 0.5 }}
                   whileHover={{ y: -5, scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-70 dark:opacity-60 transition-opacity duration-300 group-hover:opacity-80`}></div>
-                  <div className="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-[2px]"></div>
+                  <div className={`absolute inset-0 bg-gradient-to-br ${item.color}`}></div>
                   
-                  {/* Partículas decorativas */}
-                  <div className="absolute top-2 right-2 h-20 w-20 rounded-full bg-white/20 opacity-50 transition-transform duration-700 ease-in-out group-hover:scale-110"></div>
-                  <div className="absolute bottom-2 left-2 h-10 w-10 rounded-full bg-white/20 opacity-30 transition-transform duration-700 ease-in-out group-hover:scale-125"></div>
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-16 w-16 rounded-full bg-white/10 opacity-0 group-hover:opacity-40 transition-opacity duration-700 ease-in-out"></div>
+                  {/* Elemento decorativo sutil */}
+                  <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/20 blur-xl"></div>
+                  <div className="absolute bottom-0 left-0 w-20 h-20 rounded-full bg-white/10 blur-xl"></div>
                   
-                  <div className="relative h-full flex flex-col justify-between p-4 text-white">
-                    <div className="text-2xl mb-1 transition-transform duration-300 group-hover:scale-125 group-hover:translate-y-1 shadow-lg">
+                  {/* Padrão de linhas diagonais sutis */}
+                  <div className="absolute inset-0 opacity-10" 
+                       style={{
+                         backgroundImage: `repeating-linear-gradient(45deg, white, white 5px, transparent 5px, transparent 12px)`
+                       }}
+                  ></div>
+                  
+                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/30 to-transparent"></div>
+                  
+                  <div className="relative h-full flex flex-col justify-between p-5 text-white">
+                    <div className="text-2xl mb-1 transition-transform duration-300 group-hover:scale-125 group-hover:translate-y-1">
                       {item.icon}
                     </div>
                     <div>
-                      <div className="font-bold text-lg mb-0.5 drop-shadow-md">{item.title}</div>
-                      <div className="text-sm text-white/90 drop-shadow-md">{item.desc}</div>
+                      <div className="font-bold text-lg mb-0.5">{item.title}</div>
+                      <div className="text-sm text-white">{item.desc}</div>
                     </div>
                   </div>
                 </motion.div>
