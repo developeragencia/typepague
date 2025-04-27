@@ -1,6 +1,7 @@
 import { db } from "./db";
 import { users } from "@shared/schema";
 import { hashPassword } from "./auth";
+import { eq } from "drizzle-orm";
 
 async function createAdminUser() {
   try {
@@ -11,7 +12,7 @@ async function createAdminUser() {
     const [existingAdmin] = await db
       .select()
       .from(users)
-      .where(field => field.username.equals(username));
+      .where(eq(users.username, username));
     
     if (existingAdmin) {
       console.log("Usuário admin já existe!");
