@@ -44,24 +44,6 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const loginFormRef = useRef<HTMLDivElement>(null);
 
-  // Inicializa animações
-  useEffect(() => {
-    setupAnimations();
-    const animation = loginAnimation();
-    
-    return () => {
-      animation.kill();
-    };
-  }, []);
-
-  // Efeito para animar troca entre admin/cliente
-  useEffect(() => {
-    if (loginFormRef.current) {
-      const animation = switchModeAnimation();
-      return () => animation.kill();
-    }
-  }, [isAdminMode]);
-
   // Configuração dos formulários
   const loginForm = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -71,6 +53,36 @@ export default function AuthPage() {
       isAdmin: false
     },
   });
+  
+  // Inicializa animações
+  useEffect(() => {
+    setupAnimations();
+    const animation = loginAnimation();
+    
+    return () => {
+      if (animation && typeof animation.kill === 'function') {
+        animation.kill();
+      }
+    };
+  }, []);
+
+  // Efeito para atualizar campo isAdmin quando o modo muda
+  useEffect(() => {
+    // Atualiza o campo isAdmin no formulário
+    loginForm.setValue("isAdmin", isAdminMode);
+  }, [isAdminMode, loginForm]);
+  
+  // Efeito para animar troca entre admin/cliente
+  useEffect(() => {
+    if (loginFormRef.current) {
+      const animation = switchModeAnimation();
+      return () => {
+        if (animation && typeof animation.kill === 'function') {
+          animation.kill();
+        }
+      };
+    }
+  }, [isAdminMode]);
 
   const registerForm = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
