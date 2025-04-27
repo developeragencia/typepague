@@ -1,14 +1,150 @@
 import { useQuery } from "@tanstack/react-query";
 import { User, Plan, Subscription } from "@shared/schema";
 import { getQueryFn } from "@/lib/queryClient";
-import { Loader2, Users, CreditCard, LifeBuoy, ChevronRight, TrendingUp, Bell } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Loader2,
+  Users,
+  CreditCard,
+  LifeBuoy,
+  ChevronRight,
+  TrendingUp,
+  Bell,
+  CircleDollarSign,
+  Wallet,
+  LineChart,
+  ArrowUpRight,
+  Clock,
+  Activity,
+  Star,
+  Search,
+  FilterX,
+  ArrowDownUp,
+  CheckCircle2,
+  Banknote,
+  UserPlus,
+  BarChart3
+} from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import AdminLayout from "@/components/layout/admin-layout";
-import { motion } from "framer-motion";
+import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
+import { useState, useEffect } from "react";
+import { useTheme } from "@/lib/theme-provider";
+import { cn } from "@/lib/utils";
+import gsap from "gsap";
+
+// Componente para exibir cards com efeito de gradiente
+function GradientCard({ 
+  icon, 
+  title, 
+  value, 
+  subtitle, 
+  change, 
+  changeType = "positive",
+  colorFrom = "from-blue-500",
+  colorTo = "to-indigo-600"
+}) {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  function onMouseMove({ currentTarget, clientX, clientY }) {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  }
+
+  const background = useMotionTemplate`
+    radial-gradient(
+      650px circle at ${mouseX}px ${mouseY}px,
+      ${colorFrom}10 0%,
+      ${colorTo}00 80%
+    )
+  `;
+
+  return (
+    <motion.div 
+      className="relative rounded-xl overflow-hidden group"
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+      }}
+      onMouseMove={onMouseMove}
+    >
+      <div className="absolute inset-0 bg-gradient-to-br rounded-xl opacity-10 group-hover:opacity-20 transition-opacity duration-300"
+           style={{ backgroundImage: `linear-gradient(to bottom right, var(--${colorFrom.split('-')[1]}-500), var(--${colorTo.split('-')[1]}-600))` }}></div>
+      
+      <motion.div 
+        className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" 
+        style={{ background }}
+      />
+      
+      <Card className="border bg-card/50 backdrop-blur-sm relative hover:shadow-xl transition-all duration-300 h-full">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-start">
+            <div className={cn(
+              `p-2 rounded-lg text-white ${colorFrom} ${colorTo} bg-gradient-to-br shadow-md`
+            )}>
+              {icon}
+            </div>
+            <div className={cn(
+              "text-xs font-medium flex items-center gap-1 px-2 py-1 rounded-full",
+              changeType === "positive" ? "text-emerald-700 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-950/40" : 
+              changeType === "negative" ? "text-rose-700 bg-rose-100 dark:text-rose-400 dark:bg-rose-950/40" : 
+              "text-amber-700 bg-amber-100 dark:text-amber-400 dark:bg-amber-950/40"
+            )}>
+              {changeType === "positive" ? <ArrowUpRight className="h-3 w-3" /> : 
+               changeType === "negative" ? <ArrowDownUp className="h-3 w-3" /> : 
+               <Clock className="h-3 w-3" />}
+              {change}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold mt-2">{value}</div>
+          <div className="flex flex-col mt-1">
+            <p className="text-base font-medium">{title}</p>
+            <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
+// Componente de linha de tabela com efeito hover
+function TableRow({ children, isHighlighted = false, onClick }) {
+  return (
+    <motion.tr 
+      className={cn(
+        "border-b hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer relative group",
+        isHighlighted && "bg-blue-50/50 dark:bg-blue-900/10"
+      )}
+      whileHover={{ 
+        backgroundColor: "rgba(59, 130, 246, 0.05)",
+        transition: { duration: 0.1 } 
+      }}
+      onClick={onClick}
+    >
+      <motion.div
+        className="absolute inset-y-0 left-0 w-0.5 bg-blue-500 opacity-0 group-hover:opacity-100"
+        initial={{ scaleY: 0 }}
+        animate={{ scaleY: 1 }}
+        exit={{ scaleY: 0 }}
+        transition={{ duration: 0.2 }}
+      />
+      {children}
+    </motion.tr>
+  );
+}
 
 export default function AdminDashboard() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeRowId, setActiveRowId] = useState(null);
+  const { theme } = useTheme();
+  
   const { data: users, isLoading: isLoadingUsers } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
     queryFn: getQueryFn({ on401: "throw" }),
@@ -37,32 +173,50 @@ export default function AdminDashboard() {
     }
   };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut"
+  // Dados para gráfico simplificado
+  const chartData = [35, 48, 42, 55, 72, 68, 80];
+  
+  // Animar as barras do gráfico quando a página carrega
+  useEffect(() => {
+    const bars = document.querySelectorAll('.chart-bar');
+    
+    gsap.fromTo(
+      bars, 
+      { scaleY: 0, transformOrigin: 'bottom' },
+      { 
+        scaleY: 1, 
+        stagger: 0.1,
+        duration: 1,
+        ease: 'elastic.out(1, 0.5)'
       }
-    }
-  };
+    );
+  }, []);
+
+  // Função para filtrar usuários com base no termo de pesquisa
+  const filteredUsers = users?.filter(user => 
+    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (user.fullName && user.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   return (
     <AdminLayout>
       <div>
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Dashboard Admin</h1>
+            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Dashboard Admin</h1>
             <p className="text-gray-500 dark:text-gray-400">Bem-vindo ao painel administrativo do PayHub</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
               <Bell className="h-4 w-4 mr-1" />
               Notificações
             </Button>
-            <Button variant="default" size="sm">
+            <Button 
+              variant="default" 
+              size="sm" 
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0"
+            >
               <TrendingUp className="h-4 w-4 mr-1" />
               Relatórios
             </Button>
@@ -71,94 +225,174 @@ export default function AdminDashboard() {
 
         {/* Cards de estatísticas com animação */}
         <motion.div 
-          className="grid grid-cols-1 gap-6 md:grid-cols-3 mb-8"
+          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          <motion.div variants={itemVariants}>
-            <Card className="hover:shadow-md transition-shadow border-l-4 border-blue-500">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center text-blue-700 dark:text-blue-400">
-                  <Users className="h-4 w-4 mr-2 text-blue-500" />
-                  Usuários
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">
-                  {isLoadingUsers ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  ) : (
-                    users?.length || 0
-                  )}
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                  <p className="text-xs text-muted-foreground">
-                    Total de usuários cadastrados
-                  </p>
-                  <div className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
-                    +12% este mês
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <GradientCard
+            icon={<Users className="h-5 w-5" />}
+            title="Usuários"
+            value={isLoadingUsers ? <Loader2 className="h-6 w-6 animate-spin" /> : (users?.length || 0)}
+            subtitle="Total de usuários cadastrados"
+            change="+12% este mês"
+            changeType="positive"
+            colorFrom="from-blue-500"
+            colorTo="to-indigo-600"
+          />
           
-          <motion.div variants={itemVariants}>
-            <Card className="hover:shadow-md transition-shadow border-l-4 border-purple-500">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center text-purple-700 dark:text-purple-400">
-                  <CreditCard className="h-4 w-4 mr-2 text-purple-500" />
-                  Planos
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">
-                  {isLoadingPlans ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  ) : (
-                    plans?.length || 0
-                  )}
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                  <p className="text-xs text-muted-foreground">
-                    Planos disponíveis
-                  </p>
-                  <div className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
-                    Atualizado
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <GradientCard
+            icon={<CreditCard className="h-5 w-5" />}
+            title="Planos"
+            value={isLoadingPlans ? <Loader2 className="h-6 w-6 animate-spin" /> : (plans?.length || 0)}
+            subtitle="Planos disponíveis"
+            change="Atualizado"
+            changeType="neutral"
+            colorFrom="from-purple-500"
+            colorTo="to-pink-600"
+          />
           
-          <motion.div variants={itemVariants}>
-            <Card className="hover:shadow-md transition-shadow border-l-4 border-green-500">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center text-green-700 dark:text-green-400">
-                  <CreditCard className="h-4 w-4 mr-2 text-green-500" />
-                  Assinaturas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">
-                  {isLoadingSubscriptions ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  ) : (
-                    subscriptions?.length || 0
-                  )}
+          <GradientCard
+            icon={<Wallet className="h-5 w-5" />}
+            title="Assinaturas"
+            value={isLoadingSubscriptions ? <Loader2 className="h-6 w-6 animate-spin" /> : (subscriptions?.length || 0)}
+            subtitle="Assinaturas ativas"
+            change="Monitorando"
+            changeType="neutral"
+            colorFrom="from-emerald-500"
+            colorTo="to-teal-600"
+          />
+          
+          <GradientCard
+            icon={<CircleDollarSign className="h-5 w-5" />}
+            title="Receita"
+            value="R$ 0,00"
+            subtitle="Receita mensal"
+            change="Sem dados"
+            changeType="negative"
+            colorFrom="from-amber-500"
+            colorTo="to-orange-600"
+          />
+        </motion.div>
+        
+        {/* Gráfico sumário */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8"
+        >
+          <div className="lg:col-span-2">
+            <Card className="border overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800/80 border-b">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Visão Geral do Sistema</CardTitle>
+                    <CardDescription>Métricas e tendências</CardDescription>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" className="h-8 px-2">
+                      Diário
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-8 px-2 bg-white/50 dark:bg-gray-800/50 font-medium">
+                      Semanal
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-8 px-2">
+                      Mensal
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center mt-2">
-                  <p className="text-xs text-muted-foreground">
-                    Assinaturas ativas
-                  </p>
-                  <div className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded-full">
-                    Monitorando
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="h-64 flex items-end">
+                  <div className="flex-1 flex items-end h-full gap-4 px-2">
+                    {chartData.map((value, index) => (
+                      <div key={index} className="flex-1 flex flex-col items-center">
+                        <div className="h-full w-full flex items-end justify-center">
+                          <div 
+                            className={`chart-bar w-full max-w-[40px] rounded-t-md bg-gradient-to-t ${
+                              index % 2 === 0 
+                                ? 'from-blue-500 to-indigo-600' 
+                                : 'from-purple-500 to-indigo-600'
+                            }`}
+                            style={{ height: `${value}%` }}
+                          />
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                          {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][index]}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="h-full flex flex-col justify-between py-2 pl-2">
+                    <div className="text-xs text-gray-500">100%</div>
+                    <div className="text-xs text-gray-500">75%</div>
+                    <div className="text-xs text-gray-500">50%</div>
+                    <div className="text-xs text-gray-500">25%</div>
+                    <div className="text-xs text-gray-500">0%</div>
                   </div>
                 </div>
               </CardContent>
+              <CardFooter className="bg-gray-50 dark:bg-gray-900/50 border-t px-6 py-3">
+                <div className="flex justify-between w-full items-center">
+                  <div className="flex gap-6">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+                      <span className="text-sm">Usuários</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-600"></div>
+                      <span className="text-sm">Assinaturas</span>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" className="gap-1">
+                    <LineChart className="h-4 w-4" />
+                    Relatório completo
+                  </Button>
+                </div>
+              </CardFooter>
             </Card>
-          </motion.div>
+          </div>
+          
+          <div>
+            <Card className="border h-full">
+              <CardHeader className="pb-2 space-y-0 gap-1 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800/80 border-b">
+                <CardTitle className="text-base">Atividades Recentes</CardTitle>
+                <CardDescription>Últimas ações no sistema</CardDescription>
+              </CardHeader>
+              <CardContent className="px-2 py-4">
+                <div className="space-y-0">
+                  {[
+                    { icon: <UserPlus className="h-4 w-4 text-green-500" />, text: "Novo usuário cadastrado", time: "5 minutos atrás" },
+                    { icon: <CreditCard className="h-4 w-4 text-blue-500" />, text: "Plano Básico atualizado", time: "30 minutos atrás" },
+                    { icon: <CheckCircle2 className="h-4 w-4 text-purple-500" />, text: "Assinatura confirmada", time: "2 horas atrás" },
+                    { icon: <Banknote className="h-4 w-4 text-green-500" />, text: "Pagamento processado", time: "3 horas atrás" },
+                    { icon: <Activity className="h-4 w-4 text-amber-500" />, text: "Sistema atualizado", time: "5 horas atrás" },
+                  ].map((item, index) => (
+                    <div key={index} className="relative pl-6 pr-2 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-md transition-colors">
+                      <div className="flex gap-2 items-center">
+                        <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center">
+                          <div className="h-full w-px bg-gray-200 dark:bg-gray-700 absolute"></div>
+                          <div className="z-10 rounded-full bg-white dark:bg-gray-900 p-1 border border-gray-200 dark:border-gray-700">
+                            {item.icon}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{item.text}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{item.time}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+              <CardFooter className="bg-gray-50 dark:bg-gray-900/50 border-t p-3">
+                <Button variant="ghost" size="sm" className="w-full text-blue-600 dark:text-blue-400">
+                  Ver todas atividades
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
         </motion.div>
         
         <motion.div
@@ -167,101 +401,200 @@ export default function AdminDashboard() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Tabs defaultValue="users" className="mt-6">
-            <TabsList className="mb-8 bg-blue-50 dark:bg-blue-900/20 p-1">
-              <TabsTrigger value="users" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
+            <TabsList className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-1 rounded-lg">
+              <TabsTrigger 
+                value="users" 
+                className="data-[state=active]:bg-white/80 dark:data-[state=active]:bg-gray-800/80 data-[state=active]:backdrop-blur-sm data-[state=active]:shadow-sm transition-all duration-200"
+              >
                 <Users className="h-4 w-4 mr-2" />
                 Usuários
               </TabsTrigger>
-              <TabsTrigger value="plans" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
+              <TabsTrigger 
+                value="plans" 
+                className="data-[state=active]:bg-white/80 dark:data-[state=active]:bg-gray-800/80 data-[state=active]:backdrop-blur-sm data-[state=active]:shadow-sm transition-all duration-200"
+              >
                 <CreditCard className="h-4 w-4 mr-2" />
                 Planos
               </TabsTrigger>
-              <TabsTrigger value="support" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
+              <TabsTrigger 
+                value="support" 
+                className="data-[state=active]:bg-white/80 dark:data-[state=active]:bg-gray-800/80 data-[state=active]:backdrop-blur-sm data-[state=active]:shadow-sm transition-all duration-200"
+              >
                 <LifeBuoy className="h-4 w-4 mr-2" />
                 Suporte
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="users">
-              <Card className="overflow-hidden border-none shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
-                  <div className="flex justify-between items-center">
+              <Card className="overflow-hidden border shadow-lg">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div>
                       <CardTitle>Gerenciamento de Usuários</CardTitle>
                       <CardDescription>
-                        Visualize e gerencie todos os usuários da plataforma.
+                        Visualize e gerencie todos os usuários da plataforma
                       </CardDescription>
                     </div>
-                    <Button variant="outline" size="sm">
-                      <Users className="h-4 w-4 mr-2" />
-                      Adicionar usuário
-                    </Button>
+                    
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                        <Input 
+                          placeholder="Buscar usuários..." 
+                          className="pl-8 h-9 sm:w-[180px] md:w-[240px] bg-white dark:bg-gray-900" 
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        {searchTerm && (
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="absolute right-0 top-0 h-full rounded-l-none"
+                            onClick={() => setSearchTerm("")}
+                          >
+                            <FilterX className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      
+                      <Button 
+                        size="sm" 
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-0 text-white"
+                      >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Adicionar usuário
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
                   {isLoadingUsers ? (
                     <div className="flex justify-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                      <div className="flex flex-col items-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Carregando usuários...</p>
+                      </div>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
-                          <tr className="bg-gray-50 dark:bg-gray-800 border-b">
-                            <th className="text-left py-3 px-4 font-medium">ID</th>
-                            <th className="text-left py-3 px-4 font-medium">Usuário</th>
-                            <th className="text-left py-3 px-4 font-medium">Nome</th>
-                            <th className="text-left py-3 px-4 font-medium">Email</th>
-                            <th className="text-left py-3 px-4 font-medium">Empresa</th>
-                            <th className="text-left py-3 px-4 font-medium">Admin</th>
-                            <th className="text-right py-3 px-4 font-medium">Ações</th>
+                          <tr className="bg-gray-50 dark:bg-gray-800/80 border-b">
+                            <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">
+                              <div className="flex items-center">
+                                ID
+                                <ArrowDownUp className="ml-1 h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300" />
+                              </div>
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">
+                              <div className="flex items-center">
+                                Usuário
+                                <ArrowDownUp className="ml-1 h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300" />
+                              </div>
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">Nome</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">Email</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">Empresa</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">Perfil</th>
+                            <th className="text-right py-3 px-4 font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">Ações</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {users?.map((user) => (
-                            <tr key={user.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                              <td className="py-3 px-4">{user.id}</td>
-                              <td className="py-3 px-4 font-medium">{user.username}</td>
-                              <td className="py-3 px-4">{user.fullName || "-"}</td>
-                              <td className="py-3 px-4">{user.email || "-"}</td>
-                              <td className="py-3 px-4">{user.company || "-"}</td>
-                              <td className="py-3 px-4">
-                                {user.isAdmin ? (
-                                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                                    Sim
-                                  </span>
-                                ) : (
-                                  <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
-                                    Não
-                                  </span>
-                                )}
-                              </td>
-                              <td className="py-3 px-4 text-right">
-                                <Button variant="ghost" size="sm">
-                                  <ChevronRight className="h-4 w-4" />
-                                </Button>
+                          {filteredUsers?.length === 0 ? (
+                            <tr>
+                              <td colSpan={7} className="py-8 text-center text-gray-500 dark:text-gray-400">
+                                <div className="flex flex-col items-center">
+                                  <Users className="h-8 w-8 text-gray-300 dark:text-gray-600 mb-2" />
+                                  <p>Nenhum usuário encontrado</p>
+                                  {searchTerm && (
+                                    <Button 
+                                      variant="link" 
+                                      onClick={() => setSearchTerm("")}
+                                      className="mt-1 text-blue-600 dark:text-blue-400"
+                                    >
+                                      Limpar pesquisa
+                                    </Button>
+                                  )}
+                                </div>
                               </td>
                             </tr>
-                          ))}
+                          ) : (
+                            filteredUsers?.map((user) => (
+                              <TableRow
+                                key={user.id}
+                                isHighlighted={activeRowId === user.id}
+                                onClick={() => setActiveRowId(user.id === activeRowId ? null : user.id)}
+                              >
+                                <td className="py-3 px-4 text-sm">{user.id}</td>
+                                <td className="py-3 px-4 font-medium text-sm">{user.username}</td>
+                                <td className="py-3 px-4 text-sm">{user.fullName || "-"}</td>
+                                <td className="py-3 px-4 text-sm">{user.email || "-"}</td>
+                                <td className="py-3 px-4 text-sm">{user.company || "-"}</td>
+                                <td className="py-3 px-4 text-sm">
+                                  {user.isAdmin ? (
+                                    <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0">
+                                      Admin
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline">
+                                      Usuário
+                                    </Badge>
+                                  )}
+                                </td>
+                                <td className="py-3 px-4 text-right">
+                                  <div className="flex justify-end gap-1">
+                                    <Button variant="ghost" size="sm" className="h-8 px-2 text-slate-600 dark:text-slate-300">
+                                      Editar
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="h-8 w-8 text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400"
+                                    >
+                                      <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </TableRow>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
                   )}
                 </CardContent>
+                {filteredUsers?.length > 0 && (
+                  <CardFooter className="bg-gray-50 dark:bg-gray-900/50 border-t px-4 py-3 flex justify-between">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      Mostrando {filteredUsers?.length || 0} de {users?.length || 0} usuários
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" disabled>
+                        Anterior
+                      </Button>
+                      <Button variant="outline" size="sm" disabled>
+                        Próximo
+                      </Button>
+                    </div>
+                  </CardFooter>
+                )}
               </Card>
             </TabsContent>
             
             <TabsContent value="plans">
-              <Card className="overflow-hidden border-none shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
-                  <div className="flex justify-between items-center">
+              <Card className="overflow-hidden border shadow-lg">
+                <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-b">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div>
                       <CardTitle>Gerenciamento de Planos</CardTitle>
                       <CardDescription>
-                        Visualize e gerencie os planos de assinatura.
+                        Visualize e gerencie os planos de assinatura disponíveis
                       </CardDescription>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-0 text-white"
+                      size="sm"
+                    >
                       <CreditCard className="h-4 w-4 mr-2" />
                       Novo plano
                     </Button>
@@ -270,46 +603,69 @@ export default function AdminDashboard() {
                 <CardContent className="p-0">
                   {isLoadingPlans ? (
                     <div className="flex justify-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                      <div className="flex flex-col items-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Carregando planos...</p>
+                      </div>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
-                          <tr className="bg-gray-50 dark:bg-gray-800 border-b">
-                            <th className="text-left py-3 px-4 font-medium">ID</th>
-                            <th className="text-left py-3 px-4 font-medium">Nome</th>
-                            <th className="text-left py-3 px-4 font-medium">Preço</th>
-                            <th className="text-left py-3 px-4 font-medium">Ciclo</th>
-                            <th className="text-left py-3 px-4 font-medium">Destaque</th>
-                            <th className="text-left py-3 px-4 font-medium">Ações</th>
+                          <tr className="bg-gray-50 dark:bg-gray-800/80 border-b">
+                            <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">ID</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">Nome</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">Preço</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">Ciclo</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">Destaque</th>
+                            <th className="text-right py-3 px-4 font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">Ações</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {plans?.map((plan) => (
-                            <tr key={plan.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                              <td className="py-3 px-4">{plan.id}</td>
-                              <td className="py-3 px-4 font-medium">{plan.name}</td>
-                              <td className="py-3 px-4">R$ {plan.price}</td>
-                              <td className="py-3 px-4">{plan.billingCycle}</td>
-                              <td className="py-3 px-4">
-                                {plan.isPopular ? (
-                                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                                    Sim
-                                  </span>
-                                ) : (
-                                  <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
-                                    Não
-                                  </span>
-                                )}
-                              </td>
-                              <td className="py-3 px-4">
-                                <div className="flex gap-2">
-                                  <Button variant="outline" size="sm">Editar</Button>
-                                  <Button variant="destructive" size="sm">Excluir</Button>
+                          {plans?.map((plan, index) => (
+                            <TableRow
+                              key={plan.id}
+                              isHighlighted={index === 0}
+                              onClick={() => {}}
+                            >
+                              <td className="py-3 px-4 text-sm">{plan.id}</td>
+                              <td className="py-3 px-4 font-medium text-sm">
+                                <div className="flex items-center gap-2">
+                                  {plan.name}
+                                  {plan.isPopular && (
+                                    <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-500 text-[10px]">
+                                      <Star className="h-3 w-3 mr-1 fill-yellow-500 text-yellow-500" />
+                                      POPULAR
+                                    </Badge>
+                                  )}
                                 </div>
                               </td>
-                            </tr>
+                              <td className="py-3 px-4 text-sm font-medium">
+                                R$ {plan.price.toFixed(2).replace('.', ',')}
+                              </td>
+                              <td className="py-3 px-4 text-sm">{plan.billingCycle}</td>
+                              <td className="py-3 px-4 text-sm">
+                                {plan.isPopular ? (
+                                  <Badge variant="outline" className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-500 border-green-200 dark:border-green-800">
+                                    Sim
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-400 border-gray-200 dark:border-gray-700">
+                                    Não
+                                  </Badge>
+                                )}
+                              </td>
+                              <td className="py-3 px-4 text-right">
+                                <div className="flex justify-end gap-2">
+                                  <Button variant="outline" size="sm"  className="h-8 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20">
+                                    Editar
+                                  </Button>
+                                  <Button variant="outline" size="sm" className="h-8 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                    Excluir
+                                  </Button>
+                                </div>
+                              </td>
+                            </TableRow>
                           ))}
                         </tbody>
                       </table>
@@ -320,33 +676,51 @@ export default function AdminDashboard() {
             </TabsContent>
             
             <TabsContent value="support">
-              <Card className="overflow-hidden border-none shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20">
+              <Card className="overflow-hidden border shadow-lg">
+                <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 border-b">
                   <div className="flex justify-between items-center">
                     <div>
                       <CardTitle>Tickets de Suporte</CardTitle>
                       <CardDescription>
-                        Gerencie os tickets de suporte dos clientes.
+                        Gerencie os tickets de suporte dos clientes
                       </CardDescription>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button
+                      className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 border-0 text-white"
+                      size="sm"
+                    >
                       <LifeBuoy className="h-4 w-4 mr-2" />
                       Novo ticket
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="py-8 text-center text-muted-foreground">
+                <CardContent className="p-6">
+                  <div className="text-center">
                     <motion.div
                       initial={{ scale: 0.9, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ duration: 0.5 }}
+                      className="flex flex-col items-center"
                     >
-                      <LifeBuoy className="h-16 w-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
-                      <p className="text-lg font-medium">Funcionalidade em desenvolvimento</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        O sistema de tickets de suporte estará disponível em breve.
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-r from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30 flex items-center justify-center mb-4">
+                        <LifeBuoy className="h-10 w-10 text-teal-500" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Sistema de Suporte</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
+                        O sistema de tickets de suporte estará disponível em breve. Estamos trabalhando para oferecer a melhor experiência aos nossos clientes.
                       </p>
+                      <div className="flex gap-3">
+                        <Button variant="outline">
+                          <Bell className="h-4 w-4 mr-2" />
+                          Receber notificação
+                        </Button>
+                        <Button 
+                          className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 border-0 text-white"
+                        >
+                          <BarChart3 className="h-4 w-4 mr-2" />
+                          Ver estatísticas
+                        </Button>
+                      </div>
                     </motion.div>
                   </div>
                 </CardContent>
