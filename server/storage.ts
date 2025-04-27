@@ -20,6 +20,7 @@ import { eq } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
+import { Store } from "express-session";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -42,19 +43,20 @@ export interface IStorage {
   createSupportTicket(ticket: InsertCustomerSupport): Promise<CustomerSupport>;
   
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: Store;
 }
 
 const PostgresSessionStore = connectPg(session);
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: session.SessionStore;
+  sessionStore: Store;
   
   constructor() {
-    this.sessionStore = new PostgresSessionStore({ 
+    const PgStore = connectPg(session);
+    this.sessionStore = new PgStore({ 
       pool, 
       createTableIfMissing: true 
-    });
+    }) as Store;
   }
 
   async getUser(id: number): Promise<User | undefined> {

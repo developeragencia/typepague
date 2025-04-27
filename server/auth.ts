@@ -96,7 +96,7 @@ export function setupAuth(app: Express) {
   });
 
   // Middleware to check if user is an admin
-  const isAdmin = (req: Express.Request, res: Express.Response, next: Express.NextFunction) => {
+  const isAdmin = (req: Express.Request, res: any, next: any) => {
     if (req.isAuthenticated() && req.user?.isAdmin) {
       return next();
     }
