@@ -28,12 +28,12 @@ interface GradientCardProps {
   subtitle: string;
   change: string;
   changeType?: "positive" | "negative" | "neutral";
-  colorFrom?: string;
-  colorTo?: string;
-  pattern?: "dots" | "lines" | "grid" | "none";
+  accentColor?: string;
+  iconColor?: string;
+  iconBgColor?: string;
 }
 
-// Componente para exibir cards com efeito de gradiente e animações
+// Componente para exibir cards com efeitos modernos e animações
 function GradientCard({ 
   icon, 
   title, 
@@ -41,9 +41,9 @@ function GradientCard({
   subtitle, 
   change, 
   changeType = "positive",
-  colorFrom = "from-blue-600",
-  colorTo = "to-indigo-700",
-  pattern = "dots"
+  accentColor = "border-blue-500",
+  iconColor = "text-blue-600",
+  iconBgColor = "bg-blue-100"
 }: GradientCardProps) {
   return (
     <motion.div 
@@ -54,33 +54,31 @@ function GradientCard({
       }}
       whileHover={{ 
         y: -8, 
-        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)"
+        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
       }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Card className={`border-0 shadow-lg relative h-full bg-gradient-to-br ${colorFrom} ${colorTo} overflow-hidden`}>
-        {/* Padrão decorativo */}
-        {pattern !== "none" && (
-          <div className="absolute inset-0 opacity-10"
-            style={{
-              backgroundSize: pattern === "dots" ? "20px 20px" : pattern === "lines" ? "10px 10px" : "30px 30px",
-              backgroundImage: pattern === "dots" 
-                ? `radial-gradient(white 2px, transparent 0)`
-                : pattern === "lines"
-                  ? `repeating-linear-gradient(45deg, white, white 1px, transparent 1px, transparent 10px)`
-                  : `linear-gradient(white 1px, transparent 1px), linear-gradient(to right, white 1px, transparent 1px)`
-            }}
-          ></div>
-        )}
+      <Card className={`border-0 shadow-md relative h-full bg-white overflow-hidden border-l-4 ${accentColor}`}>
+        {/* Decoração de fundo estilo grid para adicionar textura */}
+        <div className="absolute inset-0 opacity-5">
+          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="mini-grid" width="15" height="15" patternUnits="userSpaceOnUse">
+                <path d="M 15 0 L 0 0 0 15" fill="none" stroke="currentColor" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#mini-grid)" />
+          </svg>
+        </div>
         
         {/* Elementos decorativos animados */}
         <motion.div 
-          className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/10"
+          className="absolute top-0 right-0 w-28 h-28 rounded-full bg-gray-100"
           animate={{ 
             scale: [1, 1.2, 1],
-            x: [0, 10, 0],
-            y: [0, -10, 0],
-            opacity: [0.1, 0.2, 0.1]
+            x: [0, 5, 0],
+            y: [0, -5, 0],
+            opacity: [0.2, 0.3, 0.2]
           }}
           transition={{ 
             repeat: Infinity, 
@@ -91,12 +89,10 @@ function GradientCard({
         ></motion.div>
         
         <motion.div 
-          className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-white/10"
+          className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-gray-100"
           animate={{ 
-            scale: [1, 1.3, 1],
-            x: [0, 5, 0],
-            y: [0, 5, 0],
-            opacity: [0.1, 0.15, 0.1]
+            scale: [1, 1.1, 1],
+            opacity: [0.15, 0.25, 0.15]
           }}
           transition={{ 
             repeat: Infinity, 
@@ -106,10 +102,10 @@ function GradientCard({
           }}
         ></motion.div>
         
-        <CardHeader className="pb-2 border-b border-white/10 z-10 relative">
+        <CardHeader className="pb-2 border-b z-10 relative">
           <div className="flex justify-between items-start">
             <motion.div 
-              className="flex items-center justify-center text-white p-2 rounded-lg bg-white/20"
+              className={`flex items-center justify-center p-2 rounded-lg ${iconBgColor} ${iconColor}`}
               whileHover={{ rotate: 10, scale: 1.1 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
@@ -118,9 +114,9 @@ function GradientCard({
             <motion.div 
               className={cn(
                 "text-xs font-medium flex items-center gap-1 px-2 py-1 rounded-full",
-                changeType === "positive" ? "bg-green-500/30 text-white border border-white/20" : 
-                changeType === "negative" ? "bg-red-500/30 text-white border border-white/20" : 
-                "bg-yellow-500/30 text-white border border-white/20"
+                changeType === "positive" ? "bg-green-100 text-green-600 border border-green-200" : 
+                changeType === "negative" ? "bg-red-100 text-red-600 border border-red-200" : 
+                "bg-yellow-100 text-amber-600 border border-yellow-200"
               )}
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -133,10 +129,10 @@ function GradientCard({
           </div>
         </CardHeader>
         
-        <CardContent className="z-10 relative">
+        <CardContent className="z-10 relative pt-3">
           <div className="relative">
             <motion.div 
-              className="text-3xl font-bold mt-2 text-white"
+              className={`text-3xl font-bold text-gray-800 ${iconColor}`}
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
@@ -144,7 +140,7 @@ function GradientCard({
               {value}
             </motion.div>
             <motion.div 
-              className="absolute -bottom-1 left-0 h-[2px] bg-white opacity-25" 
+              className={`absolute -bottom-1 left-0 h-[2px] ${iconBgColor}`} 
               initial={{ width: 0 }}
               animate={{ width: "40%" }}
               transition={{ delay: 0.5, duration: 0.8 }}
@@ -153,7 +149,7 @@ function GradientCard({
           
           <div className="flex flex-col mt-1">
             <motion.p 
-              className="text-base font-medium text-white"
+              className="text-base font-medium text-gray-700"
               initial={{ x: -10, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.5 }}
@@ -161,7 +157,7 @@ function GradientCard({
               {title}
             </motion.p>
             <motion.p 
-              className="text-xs text-white/80 mt-1"
+              className="text-sm text-gray-500 mt-1"
               initial={{ x: -10, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.5 }}
@@ -171,9 +167,24 @@ function GradientCard({
           </div>
         </CardContent>
         
+        {/* Decoração com pontilhado no canto */}
+        <div className="absolute top-3 right-3">
+          <svg width="20" height="20" viewBox="0 0 20 20" className={`${iconColor} opacity-20`}>
+            <circle cx="2" cy="2" r="2" />
+            <circle cx="2" cy="10" r="2" />
+            <circle cx="2" cy="18" r="2" />
+            <circle cx="10" cy="2" r="2" />
+            <circle cx="10" cy="10" r="2" />
+            <circle cx="10" cy="18" r="2" />
+            <circle cx="18" cy="2" r="2" />
+            <circle cx="18" cy="10" r="2" />
+            <circle cx="18" cy="18" r="2" />
+          </svg>
+        </div>
+        
         {/* Efeito de brilho no hover */}
         <motion.div 
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-all duration-1500 ease-in-out"
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-200/20 to-transparent -translate-x-full group-hover:translate-x-full transition-all duration-1000 ease-in-out"
         />
       </Card>
     </motion.div>
@@ -304,9 +315,9 @@ export default function AdminDashboard() {
             subtitle="Total de usuários cadastrados"
             change="+12% este mês"
             changeType="positive"
-            colorFrom="from-blue-600"
-            colorTo="to-indigo-700"
-            pattern="dots"
+            accentColor="border-blue-500"
+            iconColor="text-blue-600"
+            iconBgColor="bg-blue-100"
           />
           
           <GradientCard
@@ -316,9 +327,9 @@ export default function AdminDashboard() {
             subtitle="Planos disponíveis"
             change="Atualizado"
             changeType="neutral"
-            colorFrom="from-purple-600"
-            colorTo="to-pink-700"
-            pattern="grid"
+            accentColor="border-purple-500"
+            iconColor="text-purple-600"
+            iconBgColor="bg-purple-100"
           />
           
           <GradientCard
@@ -328,9 +339,9 @@ export default function AdminDashboard() {
             subtitle="Assinaturas ativas"
             change="Monitorando"
             changeType="neutral"
-            colorFrom="from-emerald-600"
-            colorTo="to-teal-700"
-            pattern="lines"
+            accentColor="border-emerald-500"
+            iconColor="text-emerald-600"
+            iconBgColor="bg-emerald-100"
           />
           
           <GradientCard
@@ -340,9 +351,9 @@ export default function AdminDashboard() {
             subtitle="Receita mensal"
             change="Sem dados"
             changeType="negative"
-            colorFrom="from-amber-600"
-            colorTo="to-orange-700"
-            pattern="dots"
+            accentColor="border-amber-500"
+            iconColor="text-amber-600"
+            iconBgColor="bg-amber-100"
           />
         </motion.div>
         
@@ -376,178 +387,204 @@ export default function AdminDashboard() {
                 icon: <BarChart3 className="w-6 h-6" />, 
                 title: "Estatísticas", 
                 desc: "Relatórios e métricas", 
-                bgColor: "bg-gradient-to-tr from-blue-600 to-indigo-700", 
-                accentColor: "bg-blue-400",
-                borderColor: "border-blue-500/50",
-                path: "/admin/dashboard-padrao",
-                pattern: "pattern-dots"
+                iconColor: "text-blue-600",
+                accentColor: "border-blue-500",
+                hoverColor: "group-hover:bg-blue-50",
+                iconBgColor: "bg-blue-100",
+                path: "/admin/dashboard-padrao"
               },
               { 
                 icon: <CreditCard className="w-6 h-6" />, 
                 title: "Produtos", 
                 desc: "Gerenciar produtos", 
-                bgColor: "bg-gradient-to-tr from-purple-600 to-pink-700",
-                accentColor: "bg-purple-400",
-                borderColor: "border-purple-500/50",
-                path: "/admin/produtos",
-                pattern: "pattern-zigzag"
+                iconColor: "text-purple-600",
+                accentColor: "border-purple-500",
+                hoverColor: "group-hover:bg-purple-50",
+                iconBgColor: "bg-purple-100",
+                path: "/admin/produtos"
               },
               { 
                 icon: <ShoppingCart className="w-6 h-6" />, 
                 title: "Checkout", 
                 desc: "Links de pagamento", 
-                bgColor: "bg-gradient-to-tr from-emerald-600 to-teal-700",
-                accentColor: "bg-emerald-400",
-                borderColor: "border-emerald-500/50",
-                path: "/admin/checkout-link",
-                pattern: "pattern-dots"
+                iconColor: "text-emerald-600",
+                accentColor: "border-emerald-500",
+                hoverColor: "group-hover:bg-emerald-50",
+                iconBgColor: "bg-emerald-100",
+                path: "/admin/checkout-link"
               },
               { 
                 icon: <PieChart className="w-6 h-6" />, 
                 title: "Builder", 
                 desc: "Personalizar checkout", 
-                bgColor: "bg-gradient-to-tr from-amber-600 to-orange-700",
-                accentColor: "bg-amber-400",
-                borderColor: "border-amber-500/50",
-                path: "/admin/checkout-builder",
-                pattern: "pattern-zigzag"
+                iconColor: "text-amber-600",
+                accentColor: "border-amber-500",
+                hoverColor: "group-hover:bg-amber-50",
+                iconBgColor: "bg-amber-100",
+                path: "/admin/checkout-builder"
               },
               { 
                 icon: <LayoutGrid className="w-6 h-6" />, 
                 title: "Layout", 
                 desc: "Temas e aparência", 
-                bgColor: "bg-gradient-to-tr from-blue-500 to-indigo-600",
-                accentColor: "bg-blue-300",
-                borderColor: "border-blue-400/50",
-                path: "/admin/lista-layout",
-                pattern: "pattern-dots"
+                iconColor: "text-indigo-600",
+                accentColor: "border-indigo-500",
+                hoverColor: "group-hover:bg-indigo-50",
+                iconBgColor: "bg-indigo-100",
+                path: "/admin/lista-layout"
               },
               { 
                 icon: <ListIcon className="w-6 h-6" />, 
                 title: "Transações", 
                 desc: "Histórico financeiro", 
-                bgColor: "bg-gradient-to-tr from-rose-600 to-red-700",
-                accentColor: "bg-rose-400",
-                borderColor: "border-rose-500/50",
-                path: "/admin/transacoes",
-                pattern: "pattern-zigzag"
+                iconColor: "text-rose-600",
+                accentColor: "border-rose-500",
+                hoverColor: "group-hover:bg-rose-50",
+                iconBgColor: "bg-rose-100",
+                path: "/admin/transacoes"
               },
               { 
                 icon: <Users className="w-6 h-6" />, 
                 title: "Clientes", 
                 desc: "Base de clientes", 
-                bgColor: "bg-gradient-to-tr from-cyan-600 to-blue-700",
-                accentColor: "bg-cyan-400",
-                borderColor: "border-cyan-500/50",
-                path: "/admin/clientes",
-                pattern: "pattern-dots"
+                iconColor: "text-cyan-600",
+                accentColor: "border-cyan-500",
+                hoverColor: "group-hover:bg-cyan-50",
+                iconBgColor: "bg-cyan-100",
+                path: "/admin/clientes"
               },
               { 
                 icon: <Settings className="w-6 h-6" />, 
                 title: "Ajustes", 
                 desc: "Configurações", 
-                bgColor: "bg-gradient-to-tr from-slate-600 to-gray-700",
-                accentColor: "bg-slate-400",
-                borderColor: "border-slate-500/50",
-                path: "/admin/perfil",
-                pattern: "pattern-zigzag" 
+                iconColor: "text-slate-600",
+                accentColor: "border-slate-500",
+                hoverColor: "group-hover:bg-slate-50",
+                iconBgColor: "bg-slate-100",
+                path: "/admin/perfil"
               },
             ].map((item, index) => (
               <Link key={index} href={item.path}>
                 <motion.div 
-                  className={`relative h-[140px] rounded-xl overflow-hidden shadow-xl border ${item.borderColor} transition-all duration-500 group cursor-pointer`}
+                  className={`relative h-[140px] rounded-xl overflow-hidden shadow-md bg-white border-l-4 ${item.accentColor} transition-all duration-500 group cursor-pointer`}
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ delay: index * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                   whileHover={{ 
                     y: -6, 
-                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)"
+                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
                   }}
                   whileTap={{ scale: 0.97 }}
                 >
-                  {/* Background com gradiente e padrão decorativo */}
-                  <div className={`absolute inset-0 ${item.bgColor}`}></div>
+                  {/* Fundo branco com efeito hover sutil */}
+                  <div className={`absolute inset-0 transition-colors duration-300 ${item.hoverColor}`}></div>
                   
-                  {/* Padrão decorativo */}
-                  <div className={`absolute inset-0 opacity-5 ${item.pattern === "pattern-dots" ? "pattern-dots" : "pattern-zigzag"}`}
-                    style={{
-                      backgroundSize: item.pattern === "pattern-dots" ? "20px 20px" : "30px 30px",
-                      backgroundImage: item.pattern === "pattern-dots" 
-                        ? `radial-gradient(white 2px, transparent 0)`
-                        : `linear-gradient(-45deg, white 0, white 25%, transparent 25%, transparent 50%, white 50%, white 75%, transparent 75%, transparent 100%)`
-                    }}
-                  ></div>
+                  {/* Decoração de fundo */}
+                  <div className="absolute inset-0 opacity-5">
+                    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <pattern id={`grid-pattern-${index}`} width="20" height="20" patternUnits="userSpaceOnUse">
+                          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                        </pattern>
+                      </defs>
+                      <rect width="100%" height="100%" fill={`url(#grid-pattern-${index})`} />
+                    </svg>
+                  </div>
                   
-                  {/* Elementos decorativos animados */}
+                  {/* Elementos decorativos */}
                   <motion.div 
-                    className={`absolute top-0 right-0 w-24 h-24 rounded-full ${item.accentColor} opacity-20`}
-                    initial={{ scale: 0.8, x: 10 }}
-                    animate={{ scale: 1, x: 0 }}
+                    className="absolute top-0 right-0 w-32 h-32 rounded-full bg-gray-100 opacity-40"
+                    animate={{ 
+                      scale: [1, 1.05, 1],
+                      x: [0, 5, 0],
+                      opacity: [0.4, 0.5, 0.4]
+                    }}
                     transition={{ 
                       repeat: Infinity, 
                       repeatType: "reverse", 
-                      duration: 3 + index / 2,
+                      duration: 8,
                       ease: "easeInOut"
                     }}
                   ></motion.div>
                   
                   <motion.div 
-                    className={`absolute bottom-0 left-0 w-16 h-16 rounded-full ${item.accentColor} opacity-20`}
-                    initial={{ scale: 1, y: 0 }}
-                    animate={{ scale: 1.2, y: -5 }}
+                    className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-gray-100 opacity-30"
+                    animate={{ 
+                      scale: [1, 1.1, 1],
+                      y: [0, -5, 0],
+                      opacity: [0.3, 0.4, 0.3]
+                    }}
                     transition={{ 
                       repeat: Infinity, 
                       repeatType: "reverse", 
-                      duration: 2.5 + index / 2,
+                      duration: 10,
                       ease: "easeInOut"
                     }}
                   ></motion.div>
-                  
-                  {/* Overlay de sombreamento para melhor contraste do texto */}
-                  <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/40 to-transparent"></div>
                   
                   {/* Conteúdo */}
-                  <div className="absolute inset-0 flex flex-col p-5">
+                  <div className="absolute inset-0 flex flex-col p-5 z-10">
                     <div className="flex-1 flex items-start justify-start">
                       <motion.div 
-                        className="flex items-center justify-center w-12 h-12 rounded-lg bg-white/20 text-white"
+                        className={`flex items-center justify-center w-14 h-14 rounded-lg ${item.iconBgColor} ${item.iconColor}`}
                         whileHover={{ rotate: 10, scale: 1.1 }}
-                        transition={{ duration: 0.3 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
                       >
                         {item.icon}
                       </motion.div>
                     </div>
                     
-                    <motion.div 
-                      className="mt-auto"
-                      initial={{ y: 10, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ 
-                        delay: index * 0.1 + 0.2, 
-                        duration: 0.5
-                      }}
-                    >
-                      <div className="font-bold text-lg text-white mb-1 tracking-wide">{item.title}</div>
-                      <div className="text-sm text-white/90">{item.desc}</div>
-                    </motion.div>
+                    <div className="mt-auto">
+                      <motion.div 
+                        className="font-bold text-lg text-gray-800 mb-1 tracking-wide"
+                        initial={{ y: 10, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: index * 0.1 + 0.2, duration: 0.5 }}
+                      >
+                        {item.title}
+                      </motion.div>
+                      <motion.div 
+                        className="text-sm text-gray-600"
+                        initial={{ y: 10, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: index * 0.1 + 0.3, duration: 0.5 }}
+                      >
+                        {item.desc}
+                      </motion.div>
+                    </div>
                   </div>
                   
                   {/* Efeito de hover - indicador de ação */}
-                  <div className="absolute top-3 right-3 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute top-4 right-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <motion.div 
-                      className="bg-white/20 rounded-full p-1"
-                      whileHover={{ scale: 1.2 }}
+                      className={`p-1.5 rounded-full ${item.iconBgColor}`}
+                      whileHover={{ scale: 1.2, rotate: 15 }}
                     >
-                      <ChevronRight className="h-4 w-4 text-white" />
+                      <ChevronRight className={`h-4 w-4 ${item.iconColor}`} />
                     </motion.div>
                   </div>
                   
-                  {/* Shimmer effect no hover */}
+                  {/* Linha decorativa */}
                   <motion.div 
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-all duration-1000 ease-in-out"
-                    initial={{ x: "-100%" }}
-                    whileHover={{ x: "100%" }}
-                    transition={{ duration: 0.7, ease: "easeInOut" }}
+                    className={`absolute bottom-0 left-0 h-0.5 ${item.iconBgColor}`}
+                    initial={{ width: "0%" }}
+                    whileHover={{ width: "100%" }}
+                    transition={{ duration: 0.4 }}
+                  />
+                  
+                  {/* Efeito pontilhado no hover */}
+                  <motion.div 
+                    className="absolute top-0 right-0 w-0 h-0 border-t-[15px] border-r-[15px] border-t-transparent border-r-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    animate={{
+                      opacity: [0, 1, 0],
+                      scale: [0.8, 1, 0.8]
+                    }}
+                    transition={{
+                      repeat: Infinity,
+                      repeatType: "loop",
+                      duration: 3,
+                      ease: "easeInOut"
+                    }}
                   />
                 </motion.div>
               </Link>
