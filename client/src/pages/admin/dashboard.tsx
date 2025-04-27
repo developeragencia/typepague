@@ -1,36 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { User, Plan, Subscription } from "@shared/schema";
 import { getQueryFn } from "@/lib/queryClient";
-import {
-  Loader2,
-  Users,
-  CreditCard,
-  LifeBuoy,
-  ChevronRight,
-  TrendingUp,
-  Bell,
-  CircleDollarSign,
-  Wallet,
-  LineChart,
-  ArrowUpRight,
-  Clock,
-  Activity,
-  Star,
-  Search,
-  FilterX,
-  ArrowDownUp,
-  CheckCircle2,
-  Banknote,
-  UserPlus,
-  BarChart3
+import { 
+  Loader2, Users, CreditCard, LifeBuoy, ChevronRight, TrendingUp, Bell,
+  CircleDollarSign, Wallet, LineChart, ArrowUpRight, Clock, Activity,
+  Search, ArrowDownUp, CheckCircle2, Banknote, UserPlus, BarChart3,
+  ShoppingCart, Settings, PieChart, LayoutGrid, List as ListIcon,
+  Sparkles, Eye, Pencil, Trash2, Filter, MoreHorizontal
 } from "lucide-react";
+import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import AdminLayout from "@/components/layout/admin-layout";
-import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
+import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useTheme } from "@/lib/theme-provider";
 import { cn } from "@/lib/utils";
@@ -267,6 +252,72 @@ export default function AdminDashboard() {
             colorFrom="from-amber-500"
             colorTo="to-orange-600"
           />
+        </motion.div>
+        
+        {/* Menu Grid com cores alternadas e efeitos */}
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <h2 className="text-lg font-semibold mb-4 flex items-center">
+            <motion.span
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="mr-2"
+            >
+              <Sparkles className="h-5 w-5 text-amber-500" />
+            </motion.span>
+            <motion.span
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              Acesso Rápido
+            </motion.span>
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[
+              { icon: <BarChart3 />, title: "Estatísticas", desc: "Relatórios e métricas", color: "from-blue-500 to-indigo-600", path: "/admin/dashboard-padrao" },
+              { icon: <CreditCard />, title: "Produtos", desc: "Gerenciar produtos", color: "from-purple-500 to-pink-600", path: "/admin/produtos" },
+              { icon: <ShoppingCart />, title: "Checkout", desc: "Links de pagamento", color: "from-emerald-500 to-teal-600", path: "/admin/checkout-link" },
+              { icon: <PieChart />, title: "Builder", desc: "Personalizar checkout", color: "from-amber-500 to-orange-600", path: "/admin/checkout-builder" },
+              { icon: <LayoutGrid />, title: "Layout", desc: "Temas e aparência", color: "from-blue-400 to-indigo-500", path: "/admin/lista-layout" },
+              { icon: <ListIcon />, title: "Transações", desc: "Histórico financeiro", color: "from-rose-500 to-red-600", path: "/admin/transacoes" },
+              { icon: <Users />, title: "Clientes", desc: "Base de clientes", color: "from-cyan-500 to-blue-600", path: "/admin/clientes" },
+              { icon: <Settings />, title: "Ajustes", desc: "Configurações", color: "from-slate-500 to-gray-600", path: "/admin/perfil" },
+            ].map((item, index) => (
+              <Link key={index} href={item.path}>
+                <motion.div 
+                  className="relative h-32 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-90 dark:opacity-80 transition-opacity duration-300 group-hover:opacity-100`}></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-black/30 dark:from-black/20 dark:to-black/40"></div>
+                  
+                  {/* Partículas decorativas */}
+                  <div className="absolute top-2 right-2 h-20 w-20 rounded-full bg-white/10 opacity-50"></div>
+                  <div className="absolute bottom-2 left-2 h-10 w-10 rounded-full bg-white/10 opacity-30"></div>
+                  
+                  <div className="relative h-full flex flex-col justify-between p-4 text-white">
+                    <div className="text-xl mb-1 transition-transform duration-300 group-hover:scale-110 group-hover:translate-y-1">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <div className="font-bold text-lg mb-0.5">{item.title}</div>
+                      <div className="text-sm text-white/80">{item.desc}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+            ))}
+          </div>
         </motion.div>
         
         {/* Gráfico sumário */}
