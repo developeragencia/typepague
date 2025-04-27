@@ -549,6 +549,9 @@ export default function AuthPage() {
           transition={{ delay: 0.8, duration: 0.5 }}
         >
           <p>PayHub © {new Date().getFullYear()} | Todos os direitos reservados</p>
+          <p className="mt-1">
+            Desenvolvido por <a href="https://alexdesenvolvedor.com.br" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline transition-colors">Alex Developer</a>
+          </p>
           <p className="mt-1">Versão 2.0 | Tecnologia de processamento de pagamentos</p>
         </motion.div>
       </div>
