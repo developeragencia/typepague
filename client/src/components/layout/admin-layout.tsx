@@ -57,7 +57,7 @@ const menuItems: MenuItem[] = [
   {
     title: "Dashboards",
     icon: <LayoutDashboard className="h-5 w-5" />,
-    color: menuColors[0],
+    color: "from-blue-600 to-indigo-700",
     children: [
       { title: "Dashboard Admin", path: "/admin" },
       { title: "Dashboard Padrão", path: "/admin/dashboard-padrao" },
@@ -66,7 +66,7 @@ const menuItems: MenuItem[] = [
   {
     title: "Produtos",
     icon: <ShoppingCart className="h-5 w-5" />,
-    color: menuColors[1],
+    color: "from-purple-600 to-pink-700",
     badge: "Novo",
     children: [
       { title: "Checkout Builder", path: "/admin/checkout-builder" },
@@ -77,13 +77,13 @@ const menuItems: MenuItem[] = [
   {
     title: "Transações",
     icon: <CreditCard className="h-5 w-5" />,
-    color: menuColors[2],
+    color: "from-rose-600 to-red-700",
     path: "/admin/transacoes",
   },
   {
     title: "Meu Perfil",
     icon: <UserCircle className="h-5 w-5" />,
-    color: menuColors[3],
+    color: "from-amber-600 to-orange-700",
     path: "/admin/perfil",
     divider: true,
   },
@@ -183,48 +183,89 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return menuItems.map((item, index) => {
       const isItemActive = isMenuActive(item);
       const bgGradient = item.color || "from-gray-500 to-gray-600";
+      const [iconColor, accentColor] = bgGradient.split(' ');
+      
+      // Extrair a cor base para usar em estilos
+      const baseColorClass = iconColor.split('-')[1];
+      const colorIntensity = isItemActive ? '600' : '500';
+      const colorClass = `${baseColorClass}-${colorIntensity}`;
       
       return (
         <motion.div 
           key={index} 
-          className={cn("mb-2", item.divider && "border-b border-gray-200 dark:border-gray-700 pb-3 mb-3")}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: index * 0.05 }}
+          className={cn("mb-3", item.divider && "border-b border-gray-200 dark:border-gray-700 pb-4 mb-4")}
+          variants={{
+            hidden: { opacity: 0, x: -20 },
+            visible: { opacity: 1, x: 0 }
+          }}
         >
           {item.children ? (
             <div>
-              <button
+              <motion.button
                 onClick={() => toggleMenu(item.title)}
                 className={cn(
-                  "flex items-center w-full p-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-all dark:text-gray-300 dark:hover:bg-gray-800",
-                  isItemActive && "bg-gray-100 dark:bg-gray-800 text-blue-600 dark:text-blue-400 font-medium"
+                  "flex items-center w-full p-3 rounded-xl text-gray-700 hover:bg-gray-50 transition-all dark:text-gray-300 dark:hover:bg-gray-800/50 relative overflow-hidden group",
+                  isItemActive && cn(
+                    "bg-gradient-to-r from-gray-50 to-white dark:from-gray-800/60 dark:to-gray-900/40 font-medium border border-gray-100 dark:border-gray-700/50"
+                  )
                 )}
+                whileHover={{ 
+                  scale: 1.01,
+                  transition: { duration: 0.2 }
+                }}
+                whileTap={{ scale: 0.98 }}
               >
+                {/* Indicador lateral de item ativo */}
+                {isItemActive && (
+                  <motion.div 
+                    className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${bgGradient}`}
+                    layoutId={`sidebar-active-${index}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  />
+                )}
+                
+                {/* Elemento decorativo de fundo no hover */}
+                <motion.div 
+                  className={`absolute inset-0 bg-gradient-to-r ${bgGradient} opacity-0 group-hover:opacity-5 dark:group-hover:opacity-10 transition-opacity duration-300`}
+                />
+                
+                {/* Ícone com fundo */}
                 <div className={cn(
-                  "mr-3",
+                  "flex items-center justify-center w-9 h-9 rounded-lg mr-3 transition-colors duration-300",
                   isItemActive 
-                    ? `text-${bgGradient.split('-')[1]}-500 dark:text-${bgGradient.split('-')[1]}-400` 
-                    : "text-gray-500 dark:text-gray-400"
+                    ? `text-${colorClass} bg-${baseColorClass}-100 dark:bg-${baseColorClass}-900/20` 
+                    : "text-gray-500 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-800/50 group-hover:bg-gray-200/80 dark:group-hover:bg-gray-700/50"
                 )}>
                   {item.icon}
                 </div>
-                <span className="flex-1 text-left">{item.title}</span>
+                
+                <span className={cn(
+                  "flex-1 text-left transition-colors duration-300",
+                  isItemActive && `text-${colorClass}`
+                )}>
+                  {item.title}
+                </span>
+                
                 {item.badge && (
                   <Badge 
                     variant="outline" 
                     className={cn(
-                      "mr-2 px-2 py-0 text-xs bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0"
+                      "mr-2 px-2 py-0 text-xs text-white border-0",
+                      `bg-gradient-to-r ${bgGradient}`
                     )}
                   >
                     {item.badge}
                   </Badge>
                 )}
+                
                 <ChevronDown className={cn(
-                  "h-4 w-4 transition-transform duration-300",
-                  openMenus[item.title] && "transform rotate-180"
+                  "h-4 w-4 transition-transform duration-500",
+                  openMenus[item.title] ? "rotate-180" : "rotate-0",
+                  isItemActive ? `text-${colorClass}` : "text-gray-400 dark:text-gray-500"
                 )} />
-              </button>
+              </motion.button>
               
               <AnimatePresence initial={false}>
                 {openMenus[item.title] && (
@@ -232,11 +273,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: [0.33, 1, 0.68, 1] }}
+                    transition={{ 
+                      duration: 0.4, 
+                      ease: [0.33, 1, 0.68, 1],
+                      opacity: { duration: 0.3 }
+                    }}
                     className="overflow-hidden"
                   >
                     <motion.div 
-                      className="pl-12 mt-1 space-y-1 relative"
+                      className="pl-12 py-1 space-y-1 relative"
                       initial="hidden"
                       animate="visible"
                       variants={{
@@ -249,67 +294,148 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         }
                       }}
                     >
-                      {/* Linha de conexão */}
-                      <div className="absolute top-0 bottom-0 left-6 w-px bg-gradient-to-b from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
+                      {/* Linha de conexão decorativa */}
+                      <div className={cn(
+                        "absolute top-0 bottom-0 left-4.5 w-0.5",
+                        `bg-gradient-to-b from-transparent via-${baseColorClass}-200 dark:via-${baseColorClass}-800/30 to-transparent`
+                      )} />
                       
-                      {item.children.map((child, childIndex) => (
-                        <motion.div
-                          key={childIndex}
-                          variants={{
-                            hidden: { opacity: 0, x: -10 },
-                            visible: { opacity: 1, x: 0 }
-                          }}
-                        >
-                          <Link 
-                            href={child.path}
-                            className={cn(
-                              "flex items-center py-2 px-3 rounded-md transition-all hover:bg-gray-100 dark:hover:bg-gray-800 relative",
-                              isActive(child.path) && "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 font-medium"
-                            )}
+                      {item.children.map((child, childIndex) => {
+                        const isChildActive = isActive(child.path);
+                        
+                        return (
+                          <motion.div
+                            key={childIndex}
+                            variants={{
+                              hidden: { opacity: 0, x: -10 },
+                              visible: { opacity: 1, x: 0 }
+                            }}
+                            className="my-1"
                           >
-                            {/* Ponto indicador */}
-                            <div className={cn(
-                              "absolute left-[-16px] w-2 h-2 rounded-full z-10",
-                              isActive(child.path) 
-                                ? `bg-gradient-to-r ${bgGradient}`
-                                : "bg-gray-300 dark:bg-gray-600"
-                            )} />
-                            
-                            {child.title}
-                          </Link>
-                        </motion.div>
-                      ))}
+                            <Link 
+                              href={child.path}
+                              className={cn(
+                                "flex items-center py-2 px-3 rounded-md transition-all relative group/item",
+                                isChildActive 
+                                  ? cn(
+                                    `text-${colorClass} font-medium`,
+                                    `bg-${baseColorClass}-50/50 dark:bg-${baseColorClass}-900/10`,
+                                  )
+                                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                              )}
+                            >
+                              {/* Ponto indicador animado */}
+                              <motion.div 
+                                className={cn(
+                                  "absolute left-[-17px] w-3 h-3 rounded-full z-10 flex items-center justify-center",
+                                  isChildActive 
+                                    ? `bg-${baseColorClass}-100 dark:bg-${baseColorClass}-900/20 border border-${baseColorClass}-400`
+                                    : "bg-gray-200 dark:bg-gray-700"
+                                )}
+                                initial={false}
+                                animate={isChildActive ? {
+                                  scale: [1, 1.2, 1],
+                                  transition: { 
+                                    repeat: Infinity,
+                                    repeatType: "reverse",
+                                    duration: 2
+                                  }
+                                } : {}}
+                              >
+                                {isChildActive && (
+                                  <motion.div 
+                                    className={`w-1.5 h-1.5 rounded-full bg-${colorClass}`}
+                                    layoutId={`dot-${child.path}`}
+                                  />
+                                )}
+                              </motion.div>
+                              
+                              {/* Efeito de hover */}
+                              <motion.div 
+                                className="absolute inset-0 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                style={{
+                                  background: `radial-gradient(circle at left center, rgb(var(--${baseColorClass}-50)) 0%, transparent 70%)`
+                                }}
+                              />
+                              
+                              <span className="relative z-10">{child.title}</span>
+                            </Link>
+                          </motion.div>
+                        );
+                      })}
                     </motion.div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
           ) : (
-            <Link
-              href={item.path || "#"}
-              className={cn(
-                "flex items-center p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all",
-                isActive(item.path || "") && "bg-gray-100 dark:bg-gray-800 text-blue-600 dark:text-blue-400 font-medium"
-              )}
+            <motion.div
+              whileHover={{ 
+                scale: 1.01,
+                transition: { duration: 0.2 }
+              }}
+              whileTap={{ scale: 0.98 }}
             >
-              <div className={cn(
-                "mr-3",
-                isActive(item.path || "") 
-                  ? `text-${bgGradient.split('-')[1]}-500 dark:text-${bgGradient.split('-')[1]}-400` 
-                  : "text-gray-500 dark:text-gray-400"
-              )}>
-                {item.icon}
-              </div>
-              <span>{item.title}</span>
-              {item.badge && (
-                <Badge 
-                  variant="outline" 
-                  className="ml-auto px-2 py-0 text-xs bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0"
-                >
-                  {item.badge}
-                </Badge>
-              )}
-            </Link>
+              <Link
+                href={item.path || "#"}
+                className={cn(
+                  "flex items-center p-3 rounded-xl text-gray-700 hover:bg-gray-50 transition-all dark:text-gray-300 dark:hover:bg-gray-800/50 relative overflow-hidden group",
+                  isItemActive && cn(
+                    "bg-gradient-to-r from-gray-50 to-white dark:from-gray-800/60 dark:to-gray-900/40 font-medium border border-gray-100 dark:border-gray-700/50"
+                  )
+                )}
+              >
+                {/* Indicador lateral de item ativo */}
+                {isItemActive && (
+                  <motion.div 
+                    className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${bgGradient}`}
+                    layoutId={`sidebar-active-${index}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  />
+                )}
+                
+                {/* Elemento decorativo de fundo no hover */}
+                <motion.div 
+                  className={`absolute inset-0 bg-gradient-to-r ${bgGradient} opacity-0 group-hover:opacity-5 dark:group-hover:opacity-10 transition-opacity duration-300`}
+                />
+                
+                {/* Ícone com fundo */}
+                <div className={cn(
+                  "flex items-center justify-center w-9 h-9 rounded-lg mr-3 transition-colors duration-300",
+                  isItemActive 
+                    ? `text-${colorClass} bg-${baseColorClass}-100 dark:bg-${baseColorClass}-900/20` 
+                    : "text-gray-500 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-800/50 group-hover:bg-gray-200/80 dark:group-hover:bg-gray-700/50"
+                )}>
+                  {item.icon}
+                </div>
+                
+                <span className={cn(
+                  "flex-1 transition-colors duration-300",
+                  isItemActive && `text-${colorClass}`
+                )}>
+                  {item.title}
+                </span>
+                
+                {item.badge && (
+                  <Badge 
+                    variant="outline" 
+                    className={cn(
+                      "ml-auto px-2 py-0 text-xs text-white border-0",
+                      `bg-gradient-to-r ${bgGradient}`
+                    )}
+                  >
+                    {item.badge}
+                  </Badge>
+                )}
+                
+                {/* Efeito de shimmer no hover */}
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-all duration-1000 ease-in-out"
+                />
+              </Link>
+            </motion.div>
           )}
         </motion.div>
       );
@@ -340,96 +466,196 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             animate="animate"
             exit="exit"
             className={cn(
-              "fixed top-0 left-0 z-40 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-lg",
+              "fixed top-0 left-0 z-40 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-xl",
               isMobile ? "w-[280px]" : "w-[280px]"
             )}
           >
-            <div className="flex flex-col h-full">
+            <div className="flex flex-col h-full relative overflow-hidden">
+              {/* Elementos decorativos de fundo */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute top-0 right-0 opacity-5">
+                  <svg width="200" height="200" viewBox="0 0 200 200" className="text-current">
+                    <defs>
+                      <pattern id="grid-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid-pattern)" />
+                  </svg>
+                </div>
+                <motion.div 
+                  className="absolute -left-10 bottom-20 w-48 h-48 rounded-full bg-blue-100 dark:bg-blue-900 opacity-10"
+                  animate={{ 
+                    scale: [1, 1.1, 1],
+                    x: [0, 5, 0],
+                    opacity: [0.1, 0.15, 0.1]
+                  }}
+                  transition={{ 
+                    repeat: Infinity, 
+                    repeatType: "reverse", 
+                    duration: 15,
+                    ease: "easeInOut" 
+                  }}
+                />
+              </div>
+              
               {/* Logo e botão collapse */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 z-10 bg-white dark:bg-gray-900">
                 <Link href="/admin" className="flex items-center">
-                  <div className="flex items-center">
-                    <CreditCard className="h-6 w-6 mr-2 text-blue-600 dark:text-blue-400" />
+                  <motion.div 
+                    className="flex items-center"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5 }}
+                    whileHover={{ scale: 1.03 }}
+                  >
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/50 mr-2">
+                      <CreditCard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
                     <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
                       PayHub
                     </div>
-                  </div>
+                  </motion.div>
                 </Link>
                 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleSidebar}
-                  className="focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  {isMobile ? (
-                    <X className="h-5 w-5" />
-                  ) : (
-                    <ChevronLeft className="h-5 w-5" />
-                  )}
-                </Button>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={toggleSidebar}
+                    className="focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
+                    {isMobile ? (
+                      <X className="h-5 w-5" />
+                    ) : (
+                      <ChevronLeft className="h-5 w-5" />
+                    )}
+                  </Button>
+                </motion.div>
               </div>
 
               {/* Perfil do usuário */}
-              <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-                <Avatar className="h-10 w-10 border-2 border-white dark:border-gray-700">
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white">
-                    {user?.username?.substring(0, 2).toUpperCase() || "AD"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="ml-3 flex-1">
-                  <p className="text-sm font-medium">{user?.fullName || user?.username}</p>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
-                    <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 mr-1 bg-gradient-to-r from-emerald-500 to-green-600 text-white">
-                      ADMIN
-                    </Badge>
-                    Online
-                  </div>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 relative notification-bell"
-                >
-                  <Bell className="h-4 w-4" />
-                  <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
-                </Button>
-              </div>
-
-              {/* Menu items */}
-              <div className="flex-1 overflow-y-auto p-3">
-                {renderMenuItems()}
+              <motion.div 
+                className="flex items-center p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 z-10"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                  <Avatar className="h-10 w-10 border-2 border-white dark:border-gray-700 ring-2 ring-blue-200 dark:ring-blue-800">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-600 to-cyan-600 text-white">
+                      {user?.username?.substring(0, 2).toUpperCase() || "AD"}
+                    </AvatarFallback>
+                  </Avatar>
+                </motion.div>
                 
-                {/* Seção de ações extras */}
-                <div className="mt-6 space-y-2">
-                  <h3 className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Ações rápidas
-                  </h3>
-                  
-                  <motion.div 
-                    className="grid grid-cols-2 gap-2"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                <div className="ml-3 flex-1">
+                  <motion.p 
+                    className="text-sm font-medium"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     transition={{ delay: 0.3 }}
                   >
-                    <Button variant="outline" size="sm" className="justify-start">
-                      <HelpCircle className="h-4 w-4 mr-1" />
-                      Ajuda
-                    </Button>
-                    <Button variant="outline" size="sm" className="justify-start">
-                      <Settings className="h-4 w-4 mr-1" />
-                      Configur.
-                    </Button>
-                    <Button variant="outline" size="sm" className="justify-start">
-                      <LineChart className="h-4 w-4 mr-1" />
-                      Relatórios
-                    </Button>
-                    <Button variant="outline" size="sm" className="justify-start">
-                      <CircleDollarSign className="h-4 w-4 mr-1" />
-                      Finanças
-                    </Button>
+                    {user?.fullName || user?.username}
+                  </motion.p>
+                  <motion.div 
+                    className="text-xs text-gray-500 dark:text-gray-400 flex items-center"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <Badge 
+                      variant="secondary" 
+                      className="text-[10px] px-1 py-0 h-4 mr-1 bg-gradient-to-r from-emerald-500 to-green-600 text-white border-0"
+                    >
+                      ADMIN
+                    </Badge>
+                    <span className="flex items-center">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-500 mr-1"></span>
+                      Online
+                    </span>
                   </motion.div>
                 </div>
+                
+                <motion.div 
+                  whileHover={{ scale: 1.1 }} 
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 rounded-full hover:bg-white dark:hover:bg-gray-700 relative notification-bell"
+                  >
+                    <Bell className="h-4 w-4" />
+                    <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
+                  </Button>
+                </motion.div>
+              </motion.div>
+
+              {/* Menu items */}
+              <div className="flex-1 overflow-y-auto py-4 px-3 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                      opacity: 1,
+                      transition: {
+                        staggerChildren: 0.1,
+                        delayChildren: 0.2
+                      }
+                    }
+                  }}
+                >
+                  {renderMenuItems()}
+                </motion.div>
+                
+                {/* Seção de ações extras */}
+                <motion.div 
+                  className="mt-6 space-y-3"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.5 }}
+                >
+                  <div className="px-3 flex items-center">
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent"></div>
+                    <h3 className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">
+                      Ações rápidas
+                    </h3>
+                    <div className="flex-1 h-px bg-gradient-to-r from-gray-200 dark:from-gray-700 via-gray-200 dark:via-gray-700 to-transparent"></div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 px-2">
+                    <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
+                      <Button variant="outline" size="sm" className="justify-start w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <HelpCircle className="h-4 w-4 mr-1 text-blue-600 dark:text-blue-400" />
+                        Ajuda
+                      </Button>
+                    </motion.div>
+                    
+                    <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
+                      <Button variant="outline" size="sm" className="justify-start w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <Settings className="h-4 w-4 mr-1 text-purple-600 dark:text-purple-400" />
+                        Configur.
+                      </Button>
+                    </motion.div>
+                    
+                    <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
+                      <Button variant="outline" size="sm" className="justify-start w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <LineChart className="h-4 w-4 mr-1 text-emerald-600 dark:text-emerald-400" />
+                        Relatórios
+                      </Button>
+                    </motion.div>
+                    
+                    <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
+                      <Button variant="outline" size="sm" className="justify-start w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <CircleDollarSign className="h-4 w-4 mr-1 text-amber-600 dark:text-amber-400" />
+                        Finanças
+                      </Button>
+                    </motion.div>
+                  </div>
+                </motion.div>
               </div>
 
               {/* Logout button and theme toggle */}
