@@ -14,8 +14,7 @@ import { ProtectedRoute } from "@/lib/protected-route";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/auth" component={AuthPage} />
+      <Route path="/" component={AuthPage} />
       <ProtectedRoute path="/admin" component={AdminDashboard} requireAdmin={true} />
       <Route component={NotFound} />
     </Switch>

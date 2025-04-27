@@ -1,59 +1,86 @@
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+// Configurações globais das animações
+gsap.config({
+  nullTargetWarn: false,
+});
+
+// Funções de animação
+const animations = {
+  // Timeline para animação da tela de login
+  loginAnimation: () => {
+    const tl = gsap.timeline();
+    
+    tl.fromTo(
+      ".login-card",
+      { opacity: 0, y: 50 },
+      { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
+    );
+    
+    tl.fromTo(
+      ".login-title",
+      { opacity: 0, y: -20 },
+      { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
+      "-=0.4"
+    );
+    
+    tl.fromTo(
+      ".form-field",
+      { opacity: 0, x: -20 },
+      { opacity: 1, x: 0, duration: 0.5, stagger: 0.1, ease: "power2.out" },
+      "-=0.2"
+    );
+    
+    tl.fromTo(
+      ".login-button",
+      { opacity: 0, scale: 0.8 },
+      { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
+      "-=0.1"
+    );
+    
+    return tl;
+  },
+
+  // Animação para mudança entre modos (cliente/admin)
+  switchModeAnimation: () => {
+    const tl = gsap.timeline();
+    
+    tl.to(
+      ".login-form",
+      { opacity: 0, scale: 0.9, duration: 0.3, ease: "power2.in" }
+    );
+    
+    tl.to(
+      ".login-form",
+      { opacity: 1, scale: 1, duration: 0.5, ease: "power2.out" },
+      "+=0.1"
+    );
+    
+    return tl;
+  },
+
+  // Animação para decorações de fundo
+  backgroundAnimation: () => {
+    const tl = gsap.timeline({ repeat: -1, yoyo: true });
+    
+    tl.to(
+      ".bg-shape",
+      { 
+        y: -15, 
+        rotation: "+=5", 
+        duration: 4, 
+        stagger: 0.2, 
+        ease: "sine.inOut" 
+      }
+    );
+    
+    return tl;
+  }
+};
+
+// Função para inicializar todas as animações
 export function setupAnimations() {
-  // Register GSAP plugins
-  gsap.registerPlugin(ScrollTrigger);
-
-  // Make sure our animations are only set up once
-  if (document.querySelector('[data-animations-initialized="true"]')) {
-    return;
-  }
-
-  // Mark animations as initialized
-  document.body.setAttribute('data-animations-initialized', 'true');
-
-  // Animation for cards with rotate hover effect
-  const cards = document.querySelectorAll('.card-rotate-hover');
-  cards.forEach(card => {
-    card.addEventListener('mouseenter', () => {
-      gsap.to(card, { y: -5, rotate: 1, duration: 0.3, ease: 'power2.out' });
-    });
-    
-    card.addEventListener('mouseleave', () => {
-      gsap.to(card, { y: 0, rotate: 0, duration: 0.3, ease: 'power2.out' });
-    });
-  });
-
-  // Animation for staggered entrance of elements on scroll
-  const animateEntrance = () => {
-    const elements = document.querySelectorAll('.animate-entrance');
-    
-    elements.forEach(element => {
-      ScrollTrigger.create({
-        trigger: element,
-        start: 'top bottom-=100px',
-        onEnter: () => {
-          gsap.to(element, { 
-            opacity: 1, 
-            y: 0, 
-            duration: 0.5, 
-            ease: 'power2.out' 
-          });
-        },
-        once: true
-      });
-    });
-  };
-
-  // Initialize entrance animations
-  animateEntrance();
-
-  // Animation for credit card flip effect
-  const creditCard = document.querySelector('.credit-card');
-  if (creditCard) {
-    creditCard.addEventListener('click', function() {
-      creditCard.classList.toggle('flipped');
-    });
-  }
+  animations.backgroundAnimation();
 }
+
+export const { loginAnimation, switchModeAnimation, backgroundAnimation } = animations;

@@ -20,6 +20,7 @@ type AuthContextType = {
 type LoginData = {
   username: string;
   password: string;
+  isAdmin?: boolean;
 };
 
 type RegisterData = {
@@ -45,7 +46,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
-      const res = await apiRequest("POST", "/api/login", credentials);
+      // Não precisamos enviar o campo isAdmin para a API
+      const { isAdmin, ...loginData } = credentials;
+      const res = await apiRequest("POST", "/api/login", loginData);
       return await res.json();
     },
     onSuccess: (user: User) => {
