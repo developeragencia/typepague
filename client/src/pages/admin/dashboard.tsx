@@ -21,6 +21,17 @@ import { useTheme } from "@/lib/theme-provider";
 import { cn } from "@/lib/utils";
 import gsap from "gsap";
 
+interface GradientCardProps {
+  icon: React.ReactNode;
+  title: string; 
+  value: React.ReactNode;
+  subtitle: string;
+  change: string;
+  changeType?: "positive" | "negative" | "neutral";
+  colorFrom?: string;
+  colorTo?: string;
+}
+
 // Componente para exibir cards com efeito de gradiente
 function GradientCard({ 
   icon, 
@@ -31,24 +42,7 @@ function GradientCard({
   changeType = "positive",
   colorFrom = "from-blue-500",
   colorTo = "to-indigo-600"
-}) {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  function onMouseMove({ currentTarget, clientX, clientY }) {
-    const { left, top } = currentTarget.getBoundingClientRect();
-    mouseX.set(clientX - left);
-    mouseY.set(clientY - top);
-  }
-
-  const background = useMotionTemplate`
-    radial-gradient(
-      650px circle at ${mouseX}px ${mouseY}px,
-      ${colorFrom}10 0%,
-      ${colorTo}00 80%
-    )
-  `;
-
+}: GradientCardProps) {
   return (
     <motion.div 
       className="relative rounded-xl overflow-hidden group"
@@ -56,22 +50,15 @@ function GradientCard({
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0 }
       }}
-      onMouseMove={onMouseMove}
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.3 }}
     >
-      <div className="absolute inset-0 bg-gradient-to-br rounded-xl opacity-10 group-hover:opacity-20 transition-opacity duration-300"
-           style={{ backgroundImage: `linear-gradient(to bottom right, var(--${colorFrom.split('-')[1]}-500), var(--${colorTo.split('-')[1]}-600))` }}></div>
-      
-      <motion.div 
-        className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" 
-        style={{ background }}
-      />
+      <div className={`absolute inset-0 ${colorFrom} ${colorTo} bg-gradient-to-br rounded-xl opacity-10 group-hover:opacity-20 transition-opacity duration-300`}></div>
       
       <Card className="border bg-card/50 backdrop-blur-sm relative hover:shadow-xl transition-all duration-300 h-full">
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
-            <div className={cn(
-              `text-${colorFrom.split('-')[1]}-500 dark:text-${colorFrom.split('-')[1]}-400 text-2xl`
-            )}>
+            <div className="text-2xl" style={{ color: `var(--${colorFrom.split('-')[1]}-500)` }}>
               {icon}
             </div>
             <div className={cn(
@@ -99,8 +86,14 @@ function GradientCard({
   );
 }
 
+interface TableRowProps {
+  children: React.ReactNode;
+  isHighlighted?: boolean;
+  onClick?: () => void;
+}
+
 // Componente de linha de tabela com efeito hover
-function TableRow({ children, isHighlighted = false, onClick }) {
+function TableRow({ children, isHighlighted = false, onClick }: TableRowProps) {
   return (
     <tr 
       className={cn(
@@ -121,7 +114,7 @@ function TableRow({ children, isHighlighted = false, onClick }) {
 
 export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeRowId, setActiveRowId] = useState(null);
+  const [activeRowId, setActiveRowId] = useState<number | null>(null);
   const { theme } = useTheme();
   
   const { data: users, isLoading: isLoadingUsers } = useQuery<User[]>({
@@ -497,7 +490,7 @@ export default function AdminDashboard() {
                             className="absolute right-0 top-0 h-full rounded-l-none"
                             onClick={() => setSearchTerm("")}
                           >
-                            <FilterX className="h-4 w-4" />
+                            <Filter className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
@@ -679,7 +672,7 @@ export default function AdminDashboard() {
                                   {plan.name}
                                   {plan.isPopular && (
                                     <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-500 text-[10px]">
-                                      <Star className="h-3 w-3 mr-1 fill-yellow-500 text-yellow-500" />
+                                      <span className="text-yellow-500 mr-1">★</span>
                                       POPULAR
                                     </Badge>
                                   )}
