@@ -30,9 +30,10 @@ interface GradientCardProps {
   changeType?: "positive" | "negative" | "neutral";
   colorFrom?: string;
   colorTo?: string;
+  pattern?: "dots" | "lines" | "grid" | "none";
 }
 
-// Componente para exibir cards com efeito de gradiente
+// Componente para exibir cards com efeito de gradiente e animações
 function GradientCard({ 
   icon, 
   title, 
@@ -40,49 +41,140 @@ function GradientCard({
   subtitle, 
   change, 
   changeType = "positive",
-  colorFrom = "from-blue-500",
-  colorTo = "to-indigo-600"
+  colorFrom = "from-blue-600",
+  colorTo = "to-indigo-700",
+  pattern = "dots"
 }: GradientCardProps) {
   return (
     <motion.div 
       className="relative rounded-xl overflow-hidden group"
       variants={{
-        hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0 }
+        hidden: { opacity: 0, y: 20, scale: 0.95 },
+        visible: { opacity: 1, y: 0, scale: 1 }
       }}
-      whileHover={{ y: -5, scale: 1.02 }}
-      transition={{ duration: 0.3 }}
+      whileHover={{ 
+        y: -8, 
+        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)"
+      }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Card className={`border-0 shadow-lg relative hover:shadow-xl transition-all duration-300 h-full bg-gradient-to-br ${colorFrom} ${colorTo}`}>
-        <CardHeader className="pb-2 border-b border-white/10">
+      <Card className={`border-0 shadow-lg relative h-full bg-gradient-to-br ${colorFrom} ${colorTo} overflow-hidden`}>
+        {/* Padrão decorativo */}
+        {pattern !== "none" && (
+          <div className="absolute inset-0 opacity-10"
+            style={{
+              backgroundSize: pattern === "dots" ? "20px 20px" : pattern === "lines" ? "10px 10px" : "30px 30px",
+              backgroundImage: pattern === "dots" 
+                ? `radial-gradient(white 2px, transparent 0)`
+                : pattern === "lines"
+                  ? `repeating-linear-gradient(45deg, white, white 1px, transparent 1px, transparent 10px)`
+                  : `linear-gradient(white 1px, transparent 1px), linear-gradient(to right, white 1px, transparent 1px)`
+            }}
+          ></div>
+        )}
+        
+        {/* Elementos decorativos animados */}
+        <motion.div 
+          className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/10"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            x: [0, 10, 0],
+            y: [0, -10, 0],
+            opacity: [0.1, 0.2, 0.1]
+          }}
+          transition={{ 
+            repeat: Infinity, 
+            repeatType: "loop", 
+            duration: 10,
+            ease: "easeInOut" 
+          }}
+        ></motion.div>
+        
+        <motion.div 
+          className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-white/10"
+          animate={{ 
+            scale: [1, 1.3, 1],
+            x: [0, 5, 0],
+            y: [0, 5, 0],
+            opacity: [0.1, 0.15, 0.1]
+          }}
+          transition={{ 
+            repeat: Infinity, 
+            repeatType: "loop", 
+            duration: 12,
+            ease: "easeInOut" 
+          }}
+        ></motion.div>
+        
+        <CardHeader className="pb-2 border-b border-white/10 z-10 relative">
           <div className="flex justify-between items-start">
-            <div className="text-2xl text-white">
+            <motion.div 
+              className="flex items-center justify-center text-white p-2 rounded-lg bg-white/20"
+              whileHover={{ rotate: 10, scale: 1.1 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
               {icon}
-            </div>
-            <div className={cn(
-              "text-xs font-medium flex items-center gap-1 px-2 py-1 rounded-full",
-              changeType === "positive" ? "text-white bg-white/20" : 
-              changeType === "negative" ? "text-white bg-white/20" : 
-              "text-white bg-white/20"
-            )}>
+            </motion.div>
+            <motion.div 
+              className={cn(
+                "text-xs font-medium flex items-center gap-1 px-2 py-1 rounded-full",
+                changeType === "positive" ? "bg-green-500/30 text-white border border-white/20" : 
+                changeType === "negative" ? "bg-red-500/30 text-white border border-white/20" : 
+                "bg-yellow-500/30 text-white border border-white/20"
+              )}
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
               {changeType === "positive" ? <ArrowUpRight className="h-3 w-3" /> : 
                changeType === "negative" ? <ArrowDownUp className="h-3 w-3" /> : 
                <Clock className="h-3 w-3" />}
               {change}
-            </div>
+            </motion.div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold mt-2 text-white">{value}</div>
+        
+        <CardContent className="z-10 relative">
+          <div className="relative">
+            <motion.div 
+              className="text-3xl font-bold mt-2 text-white"
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              {value}
+            </motion.div>
+            <motion.div 
+              className="absolute -bottom-1 left-0 h-[2px] bg-white opacity-25" 
+              initial={{ width: 0 }}
+              animate={{ width: "40%" }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+            />
+          </div>
+          
           <div className="flex flex-col mt-1">
-            <p className="text-base font-medium text-white">{title}</p>
-            <p className="text-xs text-white/80 mt-1">{subtitle}</p>
+            <motion.p 
+              className="text-base font-medium text-white"
+              initial={{ x: -10, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              {title}
+            </motion.p>
+            <motion.p 
+              className="text-xs text-white/80 mt-1"
+              initial={{ x: -10, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+            >
+              {subtitle}
+            </motion.p>
           </div>
         </CardContent>
         
-        {/* Elementos decorativos sutis */}
-        <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-white/10 blur-xl"></div>
-        <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full bg-white/10 blur-xl"></div>
+        {/* Efeito de brilho no hover */}
+        <motion.div 
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-all duration-1500 ease-in-out"
+        />
       </Card>
     </motion.div>
   );
@@ -212,8 +304,9 @@ export default function AdminDashboard() {
             subtitle="Total de usuários cadastrados"
             change="+12% este mês"
             changeType="positive"
-            colorFrom="from-blue-500"
-            colorTo="to-indigo-600"
+            colorFrom="from-blue-600"
+            colorTo="to-indigo-700"
+            pattern="dots"
           />
           
           <GradientCard
@@ -223,8 +316,9 @@ export default function AdminDashboard() {
             subtitle="Planos disponíveis"
             change="Atualizado"
             changeType="neutral"
-            colorFrom="from-purple-500"
-            colorTo="to-pink-600"
+            colorFrom="from-purple-600"
+            colorTo="to-pink-700"
+            pattern="grid"
           />
           
           <GradientCard
@@ -234,8 +328,9 @@ export default function AdminDashboard() {
             subtitle="Assinaturas ativas"
             change="Monitorando"
             changeType="neutral"
-            colorFrom="from-emerald-500"
-            colorTo="to-teal-600"
+            colorFrom="from-emerald-600"
+            colorTo="to-teal-700"
+            pattern="lines"
           />
           
           <GradientCard
@@ -245,8 +340,9 @@ export default function AdminDashboard() {
             subtitle="Receita mensal"
             change="Sem dados"
             changeType="negative"
-            colorFrom="from-amber-500"
-            colorTo="to-orange-600"
+            colorFrom="from-amber-600"
+            colorTo="to-orange-700"
+            pattern="dots"
           />
         </motion.div>
         
@@ -274,50 +370,185 @@ export default function AdminDashboard() {
               Acesso Rápido
             </motion.span>
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 p-4">
             {[
-              { icon: <BarChart3 />, title: "Estatísticas", desc: "Relatórios e métricas", color: "from-blue-500 to-indigo-600", path: "/admin/dashboard-padrao" },
-              { icon: <CreditCard />, title: "Produtos", desc: "Gerenciar produtos", color: "from-purple-500 to-pink-600", path: "/admin/produtos" },
-              { icon: <ShoppingCart />, title: "Checkout", desc: "Links de pagamento", color: "from-emerald-500 to-teal-600", path: "/admin/checkout-link" },
-              { icon: <PieChart />, title: "Builder", desc: "Personalizar checkout", color: "from-amber-500 to-orange-600", path: "/admin/checkout-builder" },
-              { icon: <LayoutGrid />, title: "Layout", desc: "Temas e aparência", color: "from-blue-400 to-indigo-500", path: "/admin/lista-layout" },
-              { icon: <ListIcon />, title: "Transações", desc: "Histórico financeiro", color: "from-rose-500 to-red-600", path: "/admin/transacoes" },
-              { icon: <Users />, title: "Clientes", desc: "Base de clientes", color: "from-cyan-500 to-blue-600", path: "/admin/clientes" },
-              { icon: <Settings />, title: "Ajustes", desc: "Configurações", color: "from-slate-500 to-gray-600", path: "/admin/perfil" },
+              { 
+                icon: <BarChart3 className="w-6 h-6" />, 
+                title: "Estatísticas", 
+                desc: "Relatórios e métricas", 
+                bgColor: "bg-gradient-to-tr from-blue-600 to-indigo-700", 
+                accentColor: "bg-blue-400",
+                borderColor: "border-blue-500/50",
+                path: "/admin/dashboard-padrao",
+                pattern: "pattern-dots"
+              },
+              { 
+                icon: <CreditCard className="w-6 h-6" />, 
+                title: "Produtos", 
+                desc: "Gerenciar produtos", 
+                bgColor: "bg-gradient-to-tr from-purple-600 to-pink-700",
+                accentColor: "bg-purple-400",
+                borderColor: "border-purple-500/50",
+                path: "/admin/produtos",
+                pattern: "pattern-zigzag"
+              },
+              { 
+                icon: <ShoppingCart className="w-6 h-6" />, 
+                title: "Checkout", 
+                desc: "Links de pagamento", 
+                bgColor: "bg-gradient-to-tr from-emerald-600 to-teal-700",
+                accentColor: "bg-emerald-400",
+                borderColor: "border-emerald-500/50",
+                path: "/admin/checkout-link",
+                pattern: "pattern-dots"
+              },
+              { 
+                icon: <PieChart className="w-6 h-6" />, 
+                title: "Builder", 
+                desc: "Personalizar checkout", 
+                bgColor: "bg-gradient-to-tr from-amber-600 to-orange-700",
+                accentColor: "bg-amber-400",
+                borderColor: "border-amber-500/50",
+                path: "/admin/checkout-builder",
+                pattern: "pattern-zigzag"
+              },
+              { 
+                icon: <LayoutGrid className="w-6 h-6" />, 
+                title: "Layout", 
+                desc: "Temas e aparência", 
+                bgColor: "bg-gradient-to-tr from-blue-500 to-indigo-600",
+                accentColor: "bg-blue-300",
+                borderColor: "border-blue-400/50",
+                path: "/admin/lista-layout",
+                pattern: "pattern-dots"
+              },
+              { 
+                icon: <ListIcon className="w-6 h-6" />, 
+                title: "Transações", 
+                desc: "Histórico financeiro", 
+                bgColor: "bg-gradient-to-tr from-rose-600 to-red-700",
+                accentColor: "bg-rose-400",
+                borderColor: "border-rose-500/50",
+                path: "/admin/transacoes",
+                pattern: "pattern-zigzag"
+              },
+              { 
+                icon: <Users className="w-6 h-6" />, 
+                title: "Clientes", 
+                desc: "Base de clientes", 
+                bgColor: "bg-gradient-to-tr from-cyan-600 to-blue-700",
+                accentColor: "bg-cyan-400",
+                borderColor: "border-cyan-500/50",
+                path: "/admin/clientes",
+                pattern: "pattern-dots"
+              },
+              { 
+                icon: <Settings className="w-6 h-6" />, 
+                title: "Ajustes", 
+                desc: "Configurações", 
+                bgColor: "bg-gradient-to-tr from-slate-600 to-gray-700",
+                accentColor: "bg-slate-400",
+                borderColor: "border-slate-500/50",
+                path: "/admin/perfil",
+                pattern: "pattern-zigzag" 
+              },
             ].map((item, index) => (
               <Link key={index} href={item.path}>
                 <motion.div 
-                  className="relative h-32 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.5 }}
-                  whileHover={{ y: -5, scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  className={`relative h-[140px] rounded-xl overflow-hidden shadow-xl border ${item.borderColor} transition-all duration-500 group cursor-pointer`}
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: index * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ 
+                    y: -6, 
+                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)"
+                  }}
+                  whileTap={{ scale: 0.97 }}
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${item.color}`}></div>
+                  {/* Background com gradiente e padrão decorativo */}
+                  <div className={`absolute inset-0 ${item.bgColor}`}></div>
                   
-                  {/* Elemento decorativo sutil */}
-                  <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/20 blur-xl"></div>
-                  <div className="absolute bottom-0 left-0 w-20 h-20 rounded-full bg-white/10 blur-xl"></div>
-                  
-                  {/* Padrão de linhas diagonais sutis */}
-                  <div className="absolute inset-0 opacity-10" 
-                       style={{
-                         backgroundImage: `repeating-linear-gradient(45deg, white, white 5px, transparent 5px, transparent 12px)`
-                       }}
+                  {/* Padrão decorativo */}
+                  <div className={`absolute inset-0 opacity-5 ${item.pattern === "pattern-dots" ? "pattern-dots" : "pattern-zigzag"}`}
+                    style={{
+                      backgroundSize: item.pattern === "pattern-dots" ? "20px 20px" : "30px 30px",
+                      backgroundImage: item.pattern === "pattern-dots" 
+                        ? `radial-gradient(white 2px, transparent 0)`
+                        : `linear-gradient(-45deg, white 0, white 25%, transparent 25%, transparent 50%, white 50%, white 75%, transparent 75%, transparent 100%)`
+                    }}
                   ></div>
                   
-                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/30 to-transparent"></div>
+                  {/* Elementos decorativos animados */}
+                  <motion.div 
+                    className={`absolute top-0 right-0 w-24 h-24 rounded-full ${item.accentColor} opacity-20`}
+                    initial={{ scale: 0.8, x: 10 }}
+                    animate={{ scale: 1, x: 0 }}
+                    transition={{ 
+                      repeat: Infinity, 
+                      repeatType: "reverse", 
+                      duration: 3 + index / 2,
+                      ease: "easeInOut"
+                    }}
+                  ></motion.div>
                   
-                  <div className="relative h-full flex flex-col justify-between p-5 text-white">
-                    <div className="text-2xl mb-1 transition-transform duration-300 group-hover:scale-125 group-hover:translate-y-1">
-                      {item.icon}
+                  <motion.div 
+                    className={`absolute bottom-0 left-0 w-16 h-16 rounded-full ${item.accentColor} opacity-20`}
+                    initial={{ scale: 1, y: 0 }}
+                    animate={{ scale: 1.2, y: -5 }}
+                    transition={{ 
+                      repeat: Infinity, 
+                      repeatType: "reverse", 
+                      duration: 2.5 + index / 2,
+                      ease: "easeInOut"
+                    }}
+                  ></motion.div>
+                  
+                  {/* Overlay de sombreamento para melhor contraste do texto */}
+                  <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/40 to-transparent"></div>
+                  
+                  {/* Conteúdo */}
+                  <div className="absolute inset-0 flex flex-col p-5">
+                    <div className="flex-1 flex items-start justify-start">
+                      <motion.div 
+                        className="flex items-center justify-center w-12 h-12 rounded-lg bg-white/20 text-white"
+                        whileHover={{ rotate: 10, scale: 1.1 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {item.icon}
+                      </motion.div>
                     </div>
-                    <div>
-                      <div className="font-bold text-lg mb-0.5">{item.title}</div>
-                      <div className="text-sm text-white">{item.desc}</div>
-                    </div>
+                    
+                    <motion.div 
+                      className="mt-auto"
+                      initial={{ y: 10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ 
+                        delay: index * 0.1 + 0.2, 
+                        duration: 0.5
+                      }}
+                    >
+                      <div className="font-bold text-lg text-white mb-1 tracking-wide">{item.title}</div>
+                      <div className="text-sm text-white/90">{item.desc}</div>
+                    </motion.div>
                   </div>
+                  
+                  {/* Efeito de hover - indicador de ação */}
+                  <div className="absolute top-3 right-3 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <motion.div 
+                      className="bg-white/20 rounded-full p-1"
+                      whileHover={{ scale: 1.2 }}
+                    >
+                      <ChevronRight className="h-4 w-4 text-white" />
+                    </motion.div>
+                  </div>
+                  
+                  {/* Shimmer effect no hover */}
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-all duration-1000 ease-in-out"
+                    initial={{ x: "-100%" }}
+                    whileHover={{ x: "100%" }}
+                    transition={{ duration: 0.7, ease: "easeInOut" }}
+                  />
                 </motion.div>
               </Link>
             ))}
