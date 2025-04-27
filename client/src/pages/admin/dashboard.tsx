@@ -85,7 +85,7 @@ function GradientCard({
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div className={cn(
-              `p-2 rounded-lg text-white ${colorFrom} ${colorTo} bg-gradient-to-br shadow-md`
+              `text-${colorFrom.split('-')[1]}-500 dark:text-${colorFrom.split('-')[1]}-400 text-2xl`
             )}>
               {icon}
             </div>
